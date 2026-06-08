@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Grid } from 'lucide-react';
+import { User, Lock, Grid, Eye, EyeOff } from 'lucide-react'; // Added Eye/EyeOff icons
 import { InputField } from '../components/InputField';
 import { apiClient } from '../api/apiClient';
 import type { ILoginResponse } from '../types/auth';
@@ -13,6 +13,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
   const [empEnroll, setEmpEnroll] = useState('');
   const [empPwd, setEmpPwd] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false); // Added toggle state tracker variable
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,7 +52,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
 
   return (
     <div className="fixed inset-0 w-screen h-screen m-0 p-0 overflow-hidden select-none z-50 flex flex-col justify-between items-center">
-      {/* Absolute Full Screen Background Force Fit */}
       <img 
         src={loginBg} 
         alt="AFML Background" 
@@ -59,10 +59,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
       />
       <div className="absolute inset-0 bg-slate-900/5 backdrop-brightness-95 z-10" />
       
-      <div /> {/* Top Spacer */}
+      <div />
 
-      {/* Floating Center Card - Fluid Responsive Bounds */}
-      <div className="w-full max-w-[410px] bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-xl shadow-2xl border border-white/50 relative z-20 text-center mx-auto my-auto">
+      <div className="w-full max-w-[410px] bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-xl shadow-2xl border border-white/50 relative z-10 text-center mx-auto my-auto">
         <div className="mx-auto w-11 h-11 bg-linear-to-br from-orange-500 to-orange-600 rounded-md flex items-center justify-center shadow-md mb-3 text-white">
           <Grid className="w-5 h-5 stroke-2" />
         </div>
@@ -81,14 +80,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
             icon={<User className="w-4 h-4" />}
           />
 
-          <InputField
-            id="empPwd"
-            type="password"
-            value={empPwd}
-            placeholder="Manage Passwords"
-            onChange={setEmpPwd}
-            icon={<Lock className="w-4 h-4" />}
-          />
+          {/* Wrapper container parsing the dynamic toggle inline custom component icon nodes attributes rules maps */}
+          <div className="relative flex items-center w-full">
+            <InputField
+              id="empPwd"
+              type={showPassword ? 'text' : 'password'} // Dynamically switches input rendering types stream context
+              value={empPwd}
+              placeholder="Password"
+              onChange={setEmpPwd}
+              icon={<Lock className="w-4 h-4" />}
+            />
+            
+            <button
+              type="button" // Enforced button type definition to bypass form standard trigger actions
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer focus:outline-none z-30"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
 
           {errorMsg && (
             <div className="p-3 bg-red-50 text-xs font-semibold text-red-600 border border-red-200 rounded-md">
@@ -118,10 +128,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
         </form>
       </div>
 
-      {/* Persistent Bottom Fixed Banner */}
-      <div className="w-full text-center relative z-20 text-[10px] sm:text-xs font-bold text-slate-700 max-w-4xl py-2 bg-white/30 backdrop-blur-sm rounded-md border border-white/20 shadow-xs mb-4">
-        সানশাইন আটা | ময়দা | সুজি এন্টারপ্রাইজ সিস্টেম
+      <div className="w-full text-center relative z-10 text-[10px] sm:text-xs font-bold text-slate-700 max-w-4xl py-2 bg-white/30 backdrop-blur-sm rounded-md border border-white/20 shadow-xs mb-4">
+        সানশাইন আটা | ময়দা | সুজি এন্টারপ্রাইজ সিস্টেম
       </div>
     </div>
   );
-};
+}
