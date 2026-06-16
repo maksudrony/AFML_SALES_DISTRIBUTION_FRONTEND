@@ -1,33 +1,30 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { HomePage } from './pages/HomePage';
-import './App.css';
-import './index.css';
+import DynamicRouter from './routes/DynamicRouter';
+import type { IMenuItem } from './types/auth';
 
-interface RouteProps {
+interface GuardProps {
   children: React.ReactNode;
 }
 
-// Private Route Guard Layer
-const GuardedRoute = ({ children }: RouteProps) => {
+const GuardedRoute = ({ children }: GuardProps) => {
   const token = localStorage.getItem('afml_session_token');
   return token ? <>{children}</> : <Navigate to="/" replace />;
 };
 
 const AppRoutes = () => {
   const navigate = useNavigate();
-  
-  // Enforcing reactive component internal lifecycle states mapping
   const [empName, setEmpName] = useState<string>(localStorage.getItem('afml_user_name') || 'Employee');
 
-  const handleAuthSuccess = (token: string, name: string) => {
+  // Fixed 'unexpected any' and signature mismatches exactly
+  const handleAuthSuccess = (token: string, name: string, menuTree: IMenuItem[]) => {
     localStorage.setItem('afml_session_token', token);
     localStorage.setItem('afml_user_name', name);
+    localStorage.setItem('afml_user_menu', JSON.stringify(menuTree));
     
-    // Dynamically tracking variables inside memory states to trigger auto re-render safely
-    setEmpName(name); 
-    
+    setEmpName(name);
     navigate('/home', { replace: true });
   };
 
@@ -42,28 +39,23 @@ const AppRoutes = () => {
       <Route path="/" element={<LoginPage onAuthSuccess={handleAuthSuccess} />} />
       
       <Route 
-        path="/home" 
-        element = {
+        path="/*" 
+        element={
           <GuardedRoute>
-            <HomePage 
-              empName={empName} 
-              onLogout={handleLogoutWorkflow} 
-            />
+            <HomePage empName={empName} onLogout={handleLogoutWorkflow}>
+              <DynamicRouter />
+            </HomePage>
           </GuardedRoute>
         } 
       />
-
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <AppRoutes />
     </BrowserRouter>
   );
 }
-
-export default App;
