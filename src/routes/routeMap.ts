@@ -1,7 +1,12 @@
 import React from 'react';
 
-// MASTER REGISTRY MAP: সব ডামি ও প্লেসহোল্ডার বাদ, একদম পিউর খালি খাতা
-export const routeMap: Record<string, React.ComponentType> = {
-  // ভবিষ্যতে যখনই আসল রিপোর্ট পেজ বানাবেন, শুধু এখানে এসে ১ লাইনে ম্যাপ করবেন:
+import { SummaryImsReport } from '../pages/ims-reports/SummaryImsReport'; // পাথ আপডেট করা হলো
+
+export const routeMap: Record<string, () => React.JSX.Element> = {
   // '/basicdata/saleschannel': SalesChannel,
+  '/imsreport/summeryimsreport': SummaryImsReport,
 };
+
+// export const routeMap: Record<string, React.ComponentType> = {
+//   // '/basicdata/saleschannel': SalesChannel,
+// };
