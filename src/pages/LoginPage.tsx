@@ -84,7 +84,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
         </form>
       </div>
       <div className="w-full text-center relative z-20 text-[10px] sm:text-xs font-bold text-slate-700 max-w-4xl py-2 bg-white/30 backdrop-blur-sm rounded-md border border-white/20 shadow-xs mb-4">
-        সানশাইন আটা | ময়দা | সুজি এন্টারপ্রাইজ সিস্টেম
+        সানশাইন আটা | ময়দা | সুজি
       </div>
     </div>
   );

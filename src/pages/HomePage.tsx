@@ -3,12 +3,11 @@ import { Menu, User, HelpCircle, ChevronDown } from 'lucide-react';
 import { SidebarItem } from '../components/SidebarItem';
 import type { IMenuItem } from '../types/auth';
 
-// হোম পেজের মূল টাইটেল ও কন্টেন্ট সরাসরি এই ফাইলের ভেতরেই থাকবে
 export const HomeDashboard = () => {
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 font-sans">
-      <h2 className="text-md font-bold text-slate-800">AFML Sales and Distribution</h2>
-      <p className="text-xs text-slate-400 mt-1">Welcome to Akij Flour Mills Sales and Distribution System.</p>
+    <div className="bg-white p-6 rounded-xl border border-slate-200 font-sans text-center">
+      <h2 className="text-md font-bold text-slate-800">Sales and Distribution Workspace</h2>
+      <p className="text-xs text-slate-400 mt-1">Welcome to Akij Flour Mills Enterprise System.</p>
     </div>
   );
 };
@@ -22,6 +21,8 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children }) => {
   const [userDropdown, setUserDropdown] = useState(false);
   const [menuTree, setMenuTree] = useState<IMenuItem[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const cachedMenu = localStorage.getItem('afml_user_menu');
@@ -31,11 +32,27 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
     }
   }, []);
 
+  const handleMenuToggle = (index: number) => {
+    if (openMenuIndex === index) {
+      setOpenMenuIndex(null);
+    } else {
+      setOpenMenuIndex(index);
+    }
+  };
+
   return (
-    <div className="w-screen h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0 select-none">
-      <header className="w-full h-12 bg-[#1a365d] text-white flex items-center justify-between px-4 z-50 shadow-md">
-        <div className="flex items-center gap-2">
-          <Menu className="w-5 h-5 text-white" />
+    <div className="w-screen h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
+      
+      {/* টপ গ্লোবাল ব্লু নেববার */}
+      <header className="w-full h-12 bg-[#1a365d] text-white flex items-center justify-between px-4 z-50 shadow-md shrink-0">
+        <div className="flex items-center gap-3">
+          <button 
+            onMouseEnter={() => setIsSidebarOpen(true)}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-1 hover:bg-slate-800/40 rounded-md transition-colors cursor-pointer focus:outline-none"
+          >
+            <Menu className="w-5 h-5 text-white" />
+          </button>
           <span className="font-bold text-xs tracking-wider uppercase">Sales & Distribution Portal</span>
         </div>
 
@@ -66,24 +83,59 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </div>
       </header>
 
-      <div className="w-full flex flex-1 overflow-hidden">
+      {/* মেইন কন্টেইনার বডি */}
+      <div className="w-full flex flex-1 overflow-hidden relative">
+        
+        {/* মাস্টার সাইডবার সেল: এখানে কোনো স্ক্রলবার তৈরি হতেই দেওয়া হবে না (overflow: hidden) */}
         <aside 
-          className="w-64 h-full flex flex-col p-3 overflow-y-auto shadow-2xl"
-          style={{ backgroundColor: '#121212' }}
+          className="h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900"
+          style={{ 
+            backgroundColor: '#313647',
+            width: isSidebarOpen ? '280px' : '60px',
+            overflow: 'hidden' 
+          }}
+          onMouseEnter={() => setIsSidebarOpen(true)}
+          onMouseLeave={() => {
+            setIsSidebarOpen(false);
+            setOpenMenuIndex(null); 
+          }}
         >
-          <div className="flex-1">
+          {/* ইনজেকশন স্টাইল ট্যাগ দিয়ে হ্যামার ফিক্স */}
+          <style dangerouslySetInnerHTML={{__html: `
+            .sidebar-scroll-box::-webkit-scrollbar {
+              display: none !important;
+              width: 0 !important;
+              height: 0 !important;
+            }
+            .sidebar-scroll-box {
+              scrollbar-width: none !important;
+              -ms-overflow-style: none !important;
+            }
+          `}} />
+
+          {/* কন্টেন্ট বক্স: সাইডবারের ভেতরের এই ডিভটা আলাদাভাবে স্ক্রল হবে এবং এটার স্ক্রলবারও হাইড থাকবে */}
+          <div className="flex-1 w-full overflow-y-auto overflow-x-hidden sidebar-scroll-box">
             {menuTree.map((node, index) => (
-              <SidebarItem key={index} item={node} />
+              <SidebarItem 
+                key={index} 
+                item={node} 
+                isCollapsed={!isSidebarOpen} 
+                isOpen={openMenuIndex === index}
+                onToggle={() => handleMenuToggle(index)}
+              />
             ))}
           </div>
-          <div className="text-[10px] font-mono text-slate-600 text-center py-2 border-t border-slate-800/60">
-            Release 1.0
+          
+          <div className="text-[9px] font-mono text-white-500 text-center pt-2 border-t border-slate-800/60 whitespace-nowrap overflow-hidden shrink-0">
+            {isSidebarOpen ? 'Release 1.0' : 'v1'}
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f1f5f9]">
+        {/* রাইট ওয়ার্কস্পেস এরিয়া */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f1f5f9] relative">
           {children}
         </main>
+
       </div>
     </div>
   );
