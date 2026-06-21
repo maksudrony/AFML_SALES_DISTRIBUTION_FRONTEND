@@ -6,7 +6,6 @@ import type { ILoginResponse, IMenuItem } from '../types/auth';
 import loginBg from '../assets/home_Image.png';
 
 interface LoginPageProps {
-  // সিগনেচারটি একদম পারফেক্ট ৩টা প্যারামিটার দিয়ে লক করা হলো
   onAuthSuccess: (token: string, name: string, menuTree: IMenuItem[]) => void;
 }
 
@@ -37,7 +36,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
       });
 
       if (response.data.statusCode === 1) {
-        // ব্যাকএন্ড থেকে আসা ৩টা প্রপার্টি পাস করা হলো
+        // 🚀 আপনার রিকোয়ারমেন্ট অনুযায়ী ডাটাবেজ থেকে আসা জেনুইন P_EMP_ENROLL ভ্যালু এখানে লোকাল স্টোরেজে লকড করা হলো
+        localStorage.setItem('afml_user_enroll', response.data.empEnroll);
+
+        // আপনার আগের সেই অরিজিনাল ৩টি প্যারামিটারের সেন্ট্রাল প্রপস কল
         onAuthSuccess(response.data.token || '', response.data.empName, response.data.menuTree);
       } else {
         setErrorMsg(response.data.message || 'Login failed.');

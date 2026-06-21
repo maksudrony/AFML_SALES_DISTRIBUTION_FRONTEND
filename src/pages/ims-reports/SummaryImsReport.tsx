@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { apiClient } from '../../api/apiClient'; 
 import { RGBSpinner } from '../../components/RGBSpinner';
 
 interface DropdownItem {
@@ -7,8 +8,25 @@ interface DropdownItem {
   name: string;
 }
 
+interface ReportRow {
+  channelName: string;
+  zoneName: string;
+  divisionName: string;
+  areaName: string;
+  territoryName: string;
+  distribName: string;
+  soEnrol: string;
+  empName: string;
+  joiningDate: string;
+  daysData: Record<string, number>;
+  grandTotal: number;
+}
+
 export const SummaryImsReport = () => {
-  // ১. ডেট ফিল্টারের স্টেট (Default: Month First Day to Sysdate)
+  // ০. কারেন্ট লগইন ইউজারের আইডি (Local Storage থেকে ডাইনামিক রিড)
+  const [userId, setUserId] = useState<string>('');
+
+  // ১. ডেট ফিল্টারের স্টেট
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
@@ -33,103 +51,167 @@ export const SummaryImsReport = () => {
 
   // ৩. ইউআই স্ট্যাটাস স্টেট
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [reportData, setReportData] = useState<any[]>([]);
+  const [reportData, setReportData] = useState<ReportRow[]>([]);
   const [dynamicDayColumns, setDynamicDayColumns] = useState<string[]>([]);
 
-  // ডিফল্ট ডেট ক্যালকুলেশন (Trunc Sysdate 'MON' & Trunc Sysdate)
+  // ইনিশিয়াল সেটআপ: ডেট ক্যালকুলেশন এবং আপনার apiClient দিয়ে ফার্স্ট কল
   useEffect(() => {
+    // সিস্টেমে লগইন থাকা ইউজারের এনরোল আইডি রিড
+    const savedUserId = localStorage.getItem('afml_user_enroll') || 'SYSTEM_USER'; 
+    setUserId(savedUserId);
+
+    // ডিফল্ট ডেট সেটআপ (চলতি মাসের ১ম দিন থেকে আজ পর্যন্ত)
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     
-    setFromDate(`${yyyy}-${mm}-01`); 
-    setToDate(`${yyyy}-${mm}-${dd}`);   
+    setFromDate(`${yyyy}-${mm}-01`);
+    setToDate(`${yyyy}-${mm}-${dd}`);
 
-    setChannels([
-      { id: 1, name: "Flour General Channel" },
-      { id: 2, name: "Corporate Channel" }
-    ]);
-    setCategories([
-      { id: 53, name: "Atta" },
-      { id: 54, name: "Maida" },
-      { id: 55, name: "Suji" }
-    ]);
+    // আপনার নতুন ব্যাকএন্ড কন্ট্রোলার পাথ এবং জেনুইন apiClient দিয়ে লোড
+    if (savedUserId) {
+      apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/channels/${savedUserId}`)
+        .then((res) => {
+          setChannels(res.data);
+        })
+        .catch((err) => {
+          console.error("Error loading channels via apiClient:", err);
+        });
+    }
+
+    apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/product-categories`)
+      .then((res) => {
+        setCategories(res.data);
+      })
+      .catch((err) => {
+        console.error("Error loading product categories via apiClient:", err);
+      });
   }, []);
 
-  // ক্যাসকেডিং হ্যান্ডলারস (ফিউচারে এপিআই এর সাথে ম্যাপ হবে)
-  const handleChannelChange = (val: string) => {
+  // 🔄 ক্যাসকেডিং হ্যান্ডলার ১: চ্যানেল চেঞ্জ -> জোন লোড
+  const handleChannelChange = async (val: string) => {
     setSelectedChannel(val);
     setSelectedZone(''); setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
+    setZones([]); setDivisions([]); setAreas([]); setTerritories([]);
+    
     if (val) {
-      setZones([{ id: 101, name: "Dhaka Zone" }, { id: 102, name: "Chittagong Zone" }]);
-    } else { 
-      setZones([]); 
+      try {
+        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/zones/${userId}/${val}`);
+        setZones(res.data);
+      } catch (err) {
+        console.error("Error fetching zones:", err);
+      }
     }
   };
 
-  const handleZoneChange = (val: string) => {
+  // 🔄 ক্যাসকেডিং হ্যান্ডলার ২: জোন চেঞ্জ -> ডিভিশন লোড
+  const handleZoneChange = async (val: string) => {
     setSelectedZone(val);
     setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
+    setDivisions([]); setAreas([]); setTerritories([]);
+
     if (val) {
-      setDivisions([{ id: 201, name: "Dhaka North Division" }, { id: 202, name: "Dhaka South Division" }]);
-    } else { 
-      setDivisions([]); 
+      try {
+        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/divisions/${userId}/${val}`);
+        setDivisions(res.data);
+      } catch (err) {
+        console.error("Error fetching divisions:", err);
+      }
     }
   };
 
-  const handleDivisionChange = (val: string) => {
+  // 🔄 ক্যাসকেডিং হ্যান্ডলার ৩: ডিভিশন চেঞ্জ -> এরিয়া লোড (আপনার ফিক্সড প্রসিডিউর এপিআই পাথ)
+  const handleDivisionChange = async (val: string) => {
     setSelectedDivision(val);
     setSelectedArea(''); setSelectedTerritory('');
+    setAreas([]); setTerritories([]);
+
     if (val) {
-      setAreas([{ id: 301, name: "Gulshan Area" }, { id: 302, name: "Mirpur Area" }]);
-    } else { 
-      setAreas([]); 
+      try {
+        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/areas/${userId}/${val}`);
+        setAreas(res.data);
+      } catch (err) {
+        console.error("Error fetching areas:", err);
+      }
     }
   };
 
-  const handleAreaChange = (val: string) => {
+  // 🔄 ক্যাসকেডিং হ্যান্ডলার ৪: এরিয়া চেঞ্জ -> টেরিটরি লোড (আপনার ফিক্সড প্রসিডিউর এপিআই পাথ)
+  const handleAreaChange = async (val: string) => {
     setSelectedArea(val);
     setSelectedTerritory('');
+    setTerritories([]);
+
     if (val) {
-      setTerritories([{ id: 401, name: "Gulshan-1 Territory" }, { id: 402, name: "Badda Territory" }]);
-    } else { 
-      setTerritories([]); 
+      try {
+        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/territories/${userId}/${val}`);
+        setTerritories(res.data);
+      } catch (err) {
+        console.error("Error fetching territories:", err);
+      }
     }
   };
 
-  // শো রিপোর্ট বাটন ক্লিক অ্যাকশন 
-  const handleShowReport = () => {
+  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
+  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
+  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
+  const handleShowReport = async () => {
+    if (!userId || userId === 'SYSTEM_USER') {
+      alert("Invalid Active Session! Please log in again.");
+      return;
+    }
+
     setIsLoading(true);
     setReportData([]);
+    setDynamicDayColumns([]);
 
-    setTimeout(() => {
-      const start = new Date(fromDate);
-      const end = new Date(toDate);
-      const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      
-      const cols = [];
-      for (let i = 1; i <= Math.min(diffDays, 31); i++) {
-        cols.push(`Day ${i}`);
-      }
-      setDynamicDayColumns(cols);
+    // ডটনেট মডেল বাইন্ডিং যেন ৪০০ এরর না দেয়, সেজন্য ফাঁকা থাকলে ফাঁকা স্ট্রিং বা ভ্যালু অ্যাসাইন
+    const queryProdCatId = selectedCategory && selectedCategory.trim() !== "" 
+      ? selectedCategory 
+      : ""; // 👈 এটি ডটনেটে ক্যাচ হয়ে null হিসেবে ম্যাপ হবে
 
-      setReportData([
-        {
-          channel_name: "Flour General", zone_name: "Dhaka Zone", division_name: "Dhaka North", 
-          area_name: "Gulshan Area", territory_name: "Gulshan-1", distrib_name: "M/S Korim Traders",
-          so_enrol: "EMP-9902", emp_name: "Arif Ahmed", joining_date: "12-Jan-2024",
-          daysData: cols.reduce((acc: any, curr) => ({ ...acc, [curr]: Math.floor(Math.random() * 50) }), {}),
-          grand_total: 450
+    try {
+      const response = await apiClient.get<ReportRow[]>(`/SummaryImsReport/summary-ims-report`, {
+        params: {
+          fromDate: fromDate,
+          toDate: toDate,
+          prodCatId: queryProdCatId, // 👈 এখন কুয়েরি স্ট্রিং-এ প্যারামিটার মিসিং হবে না
+          entryBy: String(userId).trim()
         }
-      ]);
+      });
+
+      const fetchedData = response.data;
+
+      if (fetchedData && fetchedData.length > 0) {
+        const dayKeys = Object.keys(fetchedData[0].daysData).sort((a, b) => {
+          const numA = parseInt(a.replace(/[^0-9]/g, ''), 10);
+          const numB = parseInt(b.replace(/[^0-9]/g, ''), 10);
+          return numA - numB;
+        });
+        setDynamicDayColumns(dayKeys);
+      } else {
+        const start = new Date(fromDate);
+        const end = new Date(toDate);
+        const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const cols = Array.from({ length: Math.min(diffDays, 31) }, (_, i) => `Day ${i + 1}`);
+        setDynamicDayColumns(cols);
+      }
+
+      setReportData(fetchedData);
+    } catch (err) {
+      console.error("Error executing report:", err);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="w-full flex flex-col gap-4 font-sans text-slate-800 select-none">
+
+          <div className="bg-yellow-100 p-2 rounded text-red-600 font-bold">
+      User ID: {userId}
+    </div>
       
       {/* ১. টপ হেডার বার */}
       <div className="bg-white px-4 py-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
@@ -142,14 +224,14 @@ export const SummaryImsReport = () => {
         </button>
       </div>
 
-      {/* ২. রিউজেবল প্যারামিটার প্যানেল - ডেক্সটপে ১ লাইনে সেম সাইজ (Flex), মোবাইল ও ট্যাবে রেসপনসিভ গ্রিড */}
+      {/* ২. রিউজেবল প্যারামিটার প্যানেল - ডেক্সটপে এক লাইনে সেম সাইজ এবং মোবাইল-ট্যাবে অটো রেসপনসিভ */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-2 items-end w-full">
         
         {/* From Date */}
         <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">From Date</label>
           <input 
-            type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
+            type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); }}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-slate-50/50"
           />
         </div>
@@ -158,7 +240,7 @@ export const SummaryImsReport = () => {
         <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">To Date</label>
           <input 
-            type="date" value={toDate} onChange={(e) => setToDate(e.target.value)}
+            type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); }}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-slate-50/50"
           />
         </div>
@@ -166,66 +248,78 @@ export const SummaryImsReport = () => {
         {/* Channel */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Channel</label>
-          <select value={selectedChannel} onChange={(e) => handleChannelChange(e.target.value)}
+          <select value={selectedChannel} onChange={(e) => { handleChannelChange(e.target.value); }}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate"
           >
             <option value="">- Select -</option>
-            {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {channels.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
           </select>
         </div>
 
         {/* Zone */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Zone</label>
-          <select value={selectedZone} onChange={(e) => handleZoneChange(e.target.value)} disabled={!selectedChannel}
+          <select value={selectedZone} onChange={(e) => { handleZoneChange(e.target.value); }} disabled={!selectedChannel}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
           >
             <option value="">- Select -</option>
-            {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
+            {zones.map((z) => (
+              <option key={z.id} value={z.id}>{z.name}</option>
+            ))}
           </select>
         </div>
 
         {/* Division */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Division</label>
-          <select value={selectedDivision} onChange={(e) => handleDivisionChange(e.target.value)} disabled={!selectedZone}
+          <select value={selectedDivision} onChange={(e) => { handleDivisionChange(e.target.value); }} disabled={!selectedZone}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
           >
             <option value="">- Select -</option>
-            {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            {divisions.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
           </select>
         </div>
 
         {/* Area */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Area</label>
-          <select value={selectedArea} onChange={(e) => handleAreaChange(e.target.value)} disabled={!selectedDivision}
+          <select value={selectedArea} onChange={(e) => { handleAreaChange(e.target.value); }} disabled={!selectedDivision}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
           >
             <option value="">- Select -</option>
-            {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {areas.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
           </select>
         </div>
 
         {/* Territory */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Territory</label>
-          <select value={selectedTerritory} onChange={(e) => setSelectedTerritory(e.target.value)} disabled={!selectedArea}
+          <select value={selectedTerritory} onChange={(e) => { setSelectedTerritory(e.target.value); }} disabled={!selectedArea}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
           >
             <option value="">- Select -</option>
-            {territories.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            {territories.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
           </select>
         </div>
 
         {/* Product Category */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Product Cat</label>
-          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}
+          <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); }}
             className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate"
           >
             <option value="">- ALL -</option>
-            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
           </select>
         </div>
 
@@ -250,7 +344,7 @@ export const SummaryImsReport = () => {
         {!isLoading && reportData.length === 0 && (
           <div className="flex flex-col items-center justify-center p-20 text-slate-400 gap-2">
             <Search className="w-8 h-8 text-slate-300 stroke-[1.5]" />
-            <p className="text-xs font-medium">Please click 'Show Report'.</p>
+            <p className="text-xs font-medium">No parameters executed. Please click 'Show Report'.</p>
           </div>
         )}
 
@@ -269,6 +363,7 @@ export const SummaryImsReport = () => {
                   <th className="p-2 border border-slate-800">SO Name</th>
                   <th className="p-2 border border-slate-800">Joining Date</th>
                   
+                  {/* ডাইনামিক ডে কলাম হেডার রেন্ডারিং */}
                   {dynamicDayColumns.map((dayCol, idx) => (
                     <th key={idx} className="p-2 border border-slate-800 text-center bg-blue-950/80">{dayCol}</th>
                   ))}
@@ -279,24 +374,25 @@ export const SummaryImsReport = () => {
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 whitespace-nowrap">
                 {reportData.map((row, index) => (
                   <tr key={index} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-2 border border-slate-200">{row.channel_name}</td>
-                    <td className="p-2 border border-slate-200">{row.zone_name}</td>
-                    <td className="p-2 border border-slate-200">{row.division_name}</td>
-                    <td className="p-2 border border-slate-200">{row.area_name}</td>
-                    <td className="p-2 border border-slate-200 font-bold text-slate-900">{row.territory_name}</td>
-                    <td className="p-2 border border-slate-200 truncate max-w-[180px]">{row.distrib_name}</td>
-                    <td className="p-2 border border-slate-200 font-mono text-slate-500">{row.so_enrol}</td>
-                    <td className="p-2 border border-slate-200">{row.emp_name}</td>
-                    <td className="p-2 border border-slate-200 text-slate-400">{row.joining_date}</td>
+                    <td className="p-2 border border-slate-200">{row.channelName}</td>
+                    <td className="p-2 border border-slate-200">{row.zoneName}</td>
+                    <td className="p-2 border border-slate-200">{row.divisionName}</td>
+                    <td className="p-2 border border-slate-200">{row.areaName}</td>
+                    <td className="p-2 border border-slate-200 font-bold text-slate-900">{row.territoryName}</td>
+                    <td className="p-2 border border-slate-200 truncate max-w-[180px]">{row.distribName}</td>
+                    <td className="p-2 border border-slate-200 font-mono text-slate-500">{row.soEnrol}</td>
+                    <td className="p-2 border border-slate-200">{row.empName}</td>
+                    <td className="p-2 border border-slate-200 text-slate-400">{row.joiningDate}</td>
                     
+                    {/* ডাইনামিক ডিকশনারি ডেটা রেন্ডারিং */}
                     {dynamicDayColumns.map((dayCol, idx) => (
                       <td key={idx} className="p-2 border border-slate-200 text-center font-mono font-bold text-blue-600">
-                        {row.daysData[dayCol] || 0}
+                        {row.daysData[dayCol] !== undefined ? row.daysData[dayCol] : 0}
                       </td>
                     ))}
                     
                     <td className="p-2 border border-slate-200 text-center font-mono font-extrabold text-indigo-700 bg-indigo-50/50">
-                      {row.grand_total}
+                      {row.grandTotal}
                     </td>
                   </tr>
                 ))}

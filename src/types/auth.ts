@@ -10,4 +10,6 @@ export interface ILoginResponse {
   message: string;
   token: string;
   empName: string; 
+  empEnroll: string;
+  menuTree: IMenuItem[];
 }
