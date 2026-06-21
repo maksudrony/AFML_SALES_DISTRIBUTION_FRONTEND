@@ -23,14 +23,14 @@ interface ReportRow {
 }
 
 export const SummaryImsReport = () => {
-  // ০. কারেন্ট লগইন ইউজারের আইডি (Local Storage থেকে ডাইনামিক রিড)
+  // User ID state read from local storage
   const [userId, setUserId] = useState<string>('');
 
-  // ১. ডেট ফিল্টারের স্টেট
+  // Date Filter States
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
-  // ২. ফিল্টার আইটেম ও সিলেকশন স্টেট
+  // Filter Dropdown States
   const [channels, setChannels] = useState<DropdownItem[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>('');
 
@@ -49,18 +49,18 @@ export const SummaryImsReport = () => {
   const [categories, setCategories] = useState<DropdownItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  // ৩. ইউআই স্ট্যাটাস স্টেট
+  // UI Status States
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [reportData, setReportData] = useState<ReportRow[]>([]);
   const [dynamicDayColumns, setDynamicDayColumns] = useState<string[]>([]);
 
-  // ইনিশিয়াল সেটআপ: ডেট ক্যালকুলেশন এবং আপনার apiClient দিয়ে ফার্স্ট কল
+  // Initial load hook for setting default states and components
   useEffect(() => {
-    // সিস্টেমে লগইন থাকা ইউজারের এনরোল আইডি রিড
-    const savedUserId = localStorage.getItem('afml_user_enroll') || 'SYSTEM_USER'; 
+    // Get logged-in user enrollment ID safely
+    const savedUserId = localStorage.getItem('afml_user_enroll') || ''; 
     setUserId(savedUserId);
 
-    // ডিফল্ট ডেট সেটআপ (চলতি মাসের ১ম দিন থেকে আজ পর্যন্ত)
+    // Setup initial date range (1st day of month to today)
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -69,17 +69,26 @@ export const SummaryImsReport = () => {
     setFromDate(`${yyyy}-${mm}-01`);
     setToDate(`${yyyy}-${mm}-${dd}`);
 
-    // আপনার নতুন ব্যাকএন্ড কন্ট্রোলার পাথ এবং জেনুইন apiClient দিয়ে লোড
+    // Fetch initial channel with fallback check
     if (savedUserId) {
       apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/channels/${savedUserId}`)
         .then((res) => {
-          setChannels(res.data);
+          // Filter out only channel_id = 1 as per business requirement
+          const filtered = res.data.filter(c => String(c.id) === '1');
+          setChannels(filtered);
+
+          // Default selection for Channel 1 and fetch its cascading zones
+          if (filtered.length > 0) {
+            setSelectedChannel('1');
+            fetchZonesForChannelOne(savedUserId, '1');
+          }
         })
         .catch((err) => {
           console.error("Error loading channels via apiClient:", err);
         });
     }
 
+    // Fetch static product categories
     apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/product-categories`)
       .then((res) => {
         setCategories(res.data);
@@ -89,7 +98,17 @@ export const SummaryImsReport = () => {
       });
   }, []);
 
-  // 🔄 ক্যাসকেডিং হ্যান্ডলার ১: চ্যানেল চেঞ্জ -> জোন লোড
+  // Helper method to fetch zones automatically for pre-selected channel 1
+  const fetchZonesForChannelOne = async (uId: string, channelId: string) => {
+    try {
+      const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/zones/${uId}/${channelId}`);
+      setZones(res.data);
+    } catch (err) {
+      console.error("Error fetching initial zones:", err);
+    }
+  };
+
+  // 🔄 Cascading Handler 1: Channel Change -> Load Zones
   const handleChannelChange = async (val: string) => {
     setSelectedChannel(val);
     setSelectedZone(''); setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
@@ -105,7 +124,7 @@ export const SummaryImsReport = () => {
     }
   };
 
-  // 🔄 ক্যাসকেডিং হ্যান্ডলার ২: জোন চেঞ্জ -> ডিভিশন লোড
+  // 🔄 Cascading Handler 2: Zone Change -> Load Divisions
   const handleZoneChange = async (val: string) => {
     setSelectedZone(val);
     setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
@@ -121,7 +140,7 @@ export const SummaryImsReport = () => {
     }
   };
 
-  // 🔄 ক্যাসকেডিং হ্যান্ডলার ৩: ডিভিশন চেঞ্জ -> এরিয়া লোড (আপনার ফিক্সড প্রসিডিউর এপিআই পাথ)
+  // 🔄 Cascading Handler 3: Division Change -> Load Areas
   const handleDivisionChange = async (val: string) => {
     setSelectedDivision(val);
     setSelectedArea(''); setSelectedTerritory('');
@@ -137,7 +156,7 @@ export const SummaryImsReport = () => {
     }
   };
 
-  // 🔄 ক্যাসকেডিং হ্যান্ডলার ৪: এরিয়া চেঞ্জ -> টেরিটরি লোড (আপনার ফিক্সড প্রসিডিউর এপিআই পাথ)
+  // 🔄 Cascading Handler 4: Area Change -> Load Territories
   const handleAreaChange = async (val: string) => {
     setSelectedArea(val);
     setSelectedTerritory('');
@@ -153,11 +172,11 @@ export const SummaryImsReport = () => {
     }
   };
 
- 
-  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
+  // 🚀 Main execution trigger handler for the pivot summary grid report
   const handleShowReport = async () => {
-    if (!userId || userId === 'SYSTEM_USER') {
-      alert("Invalid Active Session! Please log in again.");
+    // Required parameter validation check
+    if (!fromDate || !toDate || !selectedChannel) {
+      alert("Opps! Please select From Date, To Date, and Channel.");
       return;
     }
 
@@ -165,24 +184,26 @@ export const SummaryImsReport = () => {
     setReportData([]);
     setDynamicDayColumns([]);
 
-    // ডটনেট মডেল বাইন্ডিং যেন ৪০০ এরর না দেয়, সেজন্য ফাঁকা থাকলে ফাঁকা স্ট্রিং বা ভ্যালু অ্যাসাইন
-    const queryProdCatId = selectedCategory && selectedCategory.trim() !== "" 
-      ? selectedCategory 
-      : ""; // 👈 এটি ডটনেটে ক্যাচ হয়ে null হিসেবে ম্যাপ হবে
-
     try {
+      // Execute standard API client routing with dynamic parameter bindings
       const response = await apiClient.get<ReportRow[]>(`/SummaryImsReport/summary-ims-report`, {
         params: {
           fromDate: fromDate,
           toDate: toDate,
-          prodCatId: queryProdCatId, // 👈 এখন কুয়েরি স্ট্রিং-এ প্যারামিটার মিসিং হবে না
-          entryBy: String(userId).trim()
+          prodCatId: selectedCategory || null,
+          entryBy: String(userId).trim(),
+          channelId: selectedChannel ? parseFloat(selectedChannel) : null,
+          zoneId: selectedZone ? parseFloat(selectedZone) : null,
+          divisionId: selectedDivision ? parseFloat(selectedDivision) : null,
+          areaId: selectedArea ? parseFloat(selectedArea) : null,
+          territoryId: selectedTerritory ? parseFloat(selectedTerritory) : null
         }
       });
 
       const fetchedData = response.data;
 
       if (fetchedData && fetchedData.length > 0) {
+        // Sort dynamic day columns dictionary sequentially (Day 1, Day 2 format)
         const dayKeys = Object.keys(fetchedData[0].daysData).sort((a, b) => {
           const numA = parseInt(a.replace(/[^0-9]/g, ''), 10);
           const numB = parseInt(b.replace(/[^0-9]/g, ''), 10);
@@ -190,6 +211,7 @@ export const SummaryImsReport = () => {
         });
         setDynamicDayColumns(dayKeys);
       } else {
+        // Fallback static days allocation mechanism if matrix is empty
         const start = new Date(fromDate);
         const end = new Date(toDate);
         const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -199,7 +221,7 @@ export const SummaryImsReport = () => {
 
       setReportData(fetchedData);
     } catch (err) {
-      console.error("Error executing report:", err);
+      console.error("Error executing report grid pipeline:", err);
     } finally {
       setIsLoading(false);
     }
@@ -207,13 +229,8 @@ export const SummaryImsReport = () => {
 
   return (
     <div className="w-full flex flex-col gap-4 font-sans text-slate-800">
-
-    <div className="bg-yellow-100 p-2 rounded text-red-600 font-bold">
-      User ID: {userId}
-      From Date: {fromDate} | To Date: {toDate}
-    </div>
       
-      {/* ১. টপ হেডার বার */}
+      {/* 1. Main Dashboard Header Component Block */}
       <div className="bg-white px-4 py-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
         <div>
           <h2 className="text-sm font-bold text-slate-800">Summary IMS Report (Pivot View)</h2>
@@ -224,10 +241,10 @@ export const SummaryImsReport = () => {
         </button>
       </div>
 
-      {/* ২. রিউজেবল প্যারামিটার প্যানেল - ডেক্সটপে এক লাইনে সেম সাইজ এবং মোবাইল-ট্যাবে অটো রেসপনসিভ */}
+      {/* 2. Interactive Search Filter Grid Block */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-2 items-end w-full">
         
-        {/* From Date */}
+        {/* From Date Filter Picker */}
         <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">From Date</label>
           <input 
@@ -236,7 +253,7 @@ export const SummaryImsReport = () => {
           />
         </div>
 
-        {/* To Date */}
+        {/* To Date Filter Picker */}
         <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">To Date</label>
           <input 
@@ -245,7 +262,7 @@ export const SummaryImsReport = () => {
           />
         </div>
 
-        {/* Channel */}
+        {/* Sales Channel Selection Component */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Channel</label>
           <select value={selectedChannel} onChange={(e) => { handleChannelChange(e.target.value); }}
@@ -258,7 +275,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Zone */}
+        {/* Zone Picker */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Zone</label>
           <select value={selectedZone} onChange={(e) => { handleZoneChange(e.target.value); }} disabled={!selectedChannel}
@@ -271,7 +288,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Division */}
+        {/* Division Picker */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Division</label>
           <select value={selectedDivision} onChange={(e) => { handleDivisionChange(e.target.value); }} disabled={!selectedZone}
@@ -284,7 +301,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Area */}
+        {/* Area Picker */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Area</label>
           <select value={selectedArea} onChange={(e) => { handleAreaChange(e.target.value); }} disabled={!selectedDivision}
@@ -297,7 +314,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Territory */}
+        {/* Territory Picker */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Territory</label>
           <select value={selectedTerritory} onChange={(e) => { setSelectedTerritory(e.target.value); }} disabled={!selectedArea}
@@ -310,7 +327,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Product Category */}
+        {/* Product Category Dropdown */}
         <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
           <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Product Cat</label>
           <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); }}
@@ -323,7 +340,7 @@ export const SummaryImsReport = () => {
           </select>
         </div>
 
-        {/* Show Report Button */}
+        {/* Action Form Submission Button */}
         <div className="flex-1 min-w-[120px] sm:min-w-0">
           <button 
             onClick={handleShowReport} disabled={isLoading}
@@ -336,7 +353,7 @@ export const SummaryImsReport = () => {
 
       </div>
 
-      {/* ৩. রিপোর্ট গ্রিড টেবিল এরিয়া */}
+      {/* 3. Main Data Grid Table Engine Block */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px]">
         
         {isLoading && <RGBSpinner />}
@@ -363,7 +380,7 @@ export const SummaryImsReport = () => {
                   <th className="p-2 border border-slate-800">SO Name</th>
                   <th className="p-2 border border-slate-800">Joining Date</th>
                   
-                  {/* ডাইনামিক ডে কলাম হেডার রেন্ডারিং */}
+                  {/* Map over sorted matrix days headers */}
                   {dynamicDayColumns.map((dayCol, idx) => (
                     <th key={idx} className="p-2 border border-slate-800 text-center bg-blue-950/80">{dayCol}</th>
                   ))}
@@ -384,7 +401,7 @@ export const SummaryImsReport = () => {
                     <td className="p-2 border border-slate-200">{row.empName}</td>
                     <td className="p-2 border border-slate-200 text-slate-400">{row.joiningDate}</td>
                     
-                    {/* ডাইনামিক ডিকশনারি ডেটা রেন্ডারিং */}
+                    {/* Render dynamic matrix rows calculations dynamically */}
                     {dynamicDayColumns.map((dayCol, idx) => (
                       <td key={idx} className="p-2 border border-slate-200 text-center font-mono font-bold text-blue-600">
                         {row.daysData[dayCol] !== undefined ? row.daysData[dayCol] : 0}
