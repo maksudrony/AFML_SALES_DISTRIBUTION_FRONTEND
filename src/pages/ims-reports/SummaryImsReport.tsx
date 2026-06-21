@@ -153,8 +153,7 @@ export const SummaryImsReport = () => {
     }
   };
 
-  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
-  // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
+ 
   // 🚀 মেইন পিভট রিপোর্ট এক্সিকিউশন বাটন ক্লিক হ্যান্ডলার (summary-ims-report এন্ডপয়েন্ট)
   const handleShowReport = async () => {
     if (!userId || userId === 'SYSTEM_USER') {
@@ -207,10 +206,11 @@ export const SummaryImsReport = () => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 font-sans text-slate-800 select-none">
+    <div className="w-full flex flex-col gap-4 font-sans text-slate-800">
 
-          <div className="bg-yellow-100 p-2 rounded text-red-600 font-bold">
+    <div className="bg-yellow-100 p-2 rounded text-red-600 font-bold">
       User ID: {userId}
+      From Date: {fromDate} | To Date: {toDate}
     </div>
       
       {/* ১. টপ হেডার বার */}
