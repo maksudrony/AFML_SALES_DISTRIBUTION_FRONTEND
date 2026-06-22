@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { Search, FileSpreadsheet, RefreshCw, ArrowBigRight, CircleArrowRight } from 'lucide-react';
 import { apiClient } from '../../api/apiClient'; 
 import { RGBSpinner } from '../../components/RGBSpinner';
 
@@ -221,10 +221,11 @@ export const SummaryImsReport = () => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 font-sans text-slate-800">
+    <div className="w-full flex flex-col gap-3 font-sans text-slate-800">
       
       {/* Unified Parent Container: Header and Controls are now grouped into one single element */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4 w-full">
+      <div className="bg-white pt-2.5 pb-2 px-4 border-slate-200 flex flex-col gap-1.5 w-full shadow-none 
+      rounded-none -mt-4 sm:-mt-6">
         
         {/* Top Segment: Centered Titles with Right-aligned Excel Action */}
         <div className="flex items-center justify-between relative w-full pb-0">
@@ -243,8 +244,9 @@ export const SummaryImsReport = () => {
 
           {/* Export Utility Action Trigger */}
           <div className="min-w-[110px] text-right">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-md shadow-sm cursor-pointer transition-colors">
-              <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
+            <button className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white 
+            font-bold text-[10px] rounded-md shadow-sm cursor-pointer transition-colors">
+               EXCEL DOWNLOAD <FileSpreadsheet className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -373,11 +375,11 @@ export const SummaryImsReport = () => {
             <button 
               onClick={handleShowReport} disabled={isLoading}
               className="w-full flex items-center justify-center gap-1 h-[30px] text-white 
-              font-bold text-[11px] rounded-md shadow-md cursor-pointer transition-all active:scale-95 disabled:bg-slate-400
+              font-bold text-[10px] rounded-md shadow-md cursor-pointer transition-all active:scale-95 disabled:bg-slate-400
               show-report"
             >
-              Show Report
-              {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+              SHOW REPORT
+              {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <CircleArrowRight className="w-4 h-4" />}
     
             </button>
           </div>

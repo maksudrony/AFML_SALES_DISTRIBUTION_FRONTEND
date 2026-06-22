@@ -132,7 +132,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </aside>
 
         {/* রাইট ওয়ার্কস্পেস এরিয়া */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f1f5f9] relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[white] relative">
           {children}
         </main>
 
