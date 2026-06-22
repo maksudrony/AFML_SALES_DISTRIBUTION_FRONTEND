@@ -1,6 +1,52 @@
 @import "tailwindcss";
 
-/* ১. রুট এবং বডি এলিমেন্টকে ফুল স্ক্রিন ও রিজিড লেআউটে লক করা */
+/* ==========================================
+   GLOBAL REPORT STYLE UTILITIES 
+   ========================================== */
+
+/* 🚀 Global Show Report Button Style */
+.show-report {
+    background-color: #E90074 !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    color: white !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.show-report:hover {
+    background-color: #c40061 !important; /* Slightly darker pink for hover state */
+}
+
+.show-report:disabled {
+    background-color: #94a3b8 !important; /* Slate-400 for disabled/loading state */
+    cursor: not-allowed;
+}
+
+/* 🚀 Global Table Header Style */
+.table-header {
+    background-color: #D4F6FF !important;
+    color: #0f172a !important; /* Slate-900 for high-contrast dark text on light blue bg */
+}
+
+/* 🚀 Global Table Data Rows Base Style */
+.table-data {
+    color: black !important;
+    font-weight: bold !important;
+    transition: background-color 0.15s ease;
+}
+
+/* 🚀 Global Table Data Row Hover State Trigger */
+.table-data:hover {
+    background-color: #1B9C85 !important;
+    color: white !important;
+}
+
+/* Optional helper to fix child text colors (like mono font day data counters) on row hover */
+.table-data:hover td {
+    background-color: #1B9C85 !important;
+    color: white !important;
+}
+
 html, body, #root {
   margin: 0 !important;
   padding: 0 !important;
