@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Search, FileSpreadsheet, RefreshCw, ArrowBigRight, CircleArrowRight } from 'lucide-react';
-import { apiClient } from '../../api/apiClient'; 
+import { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
+import { apiClient } from '../../api/apiClient';
 import { RGBSpinner } from '../../components/RGBSpinner';
-
-interface DropdownItem {
-  id: number | string;
-  name: string;
-}
+import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
+import { CommonParameters } from '../../components/commonParameters/CommonParameters';
+import { ProductCategorySelect } from '../../components/commonParameters/ProductCategoryParameter';
+import { ShowReportButton } from '../../components/commonParameters/ShowReportButton';
+import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
+import type { ICommonParametersState } from '../../types/commonParameters';
 
 interface ReportRow {
   channelName: string;
@@ -23,373 +24,148 @@ interface ReportRow {
 }
 
 export const SummaryImsReport = () => {
-  // Dynamic Read From Local Storage for User ID
   const [userId, setUserId] = useState<string>('');
+  const [errorBanner, setErrorBanner] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Date Filter States
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+  const [selectedProdCat, setSelectedProdCat] = useState<number | ''>('');
 
-  // Items Filter States
-  const [channels, setChannels] = useState<DropdownItem[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<string>('');
+  const [locationValues, setLocationValues] = useState<ICommonParametersState>({
+    channelId: 1, 
+    zoneId: '',
+    divisionId: '',
+    areaId: '',
+    territoryId: ''
+  });
 
-  const [zones, setZones] = useState<DropdownItem[]>([]);
-  const [selectedZone, setSelectedZone] = useState<string>('');
-
-  const [divisions, setDivisions] = useState<DropdownItem[]>([]);
-  const [selectedDivision, setSelectedDivision] = useState<string>('');
-
-  const [areas, setAreas] = useState<DropdownItem[]>([]);
-  const [selectedArea, setSelectedArea] = useState<string>('');
-
-  const [territories, setTerritories] = useState<DropdownItem[]>([]);
-  const [selectedTerritory, setSelectedTerritory] = useState<string>('');
-
-  const [categories, setCategories] = useState<DropdownItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-
-  // UI States
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [reportData, setReportData] = useState<ReportRow[]>([]);
   const [dynamicDayColumns, setDynamicDayColumns] = useState<string[]>([]);
 
-  // Initial Setup: Date Calculation and API Call
   useEffect(() => {
-    const savedUserId = localStorage.getItem('afml_user_enroll') || ''; 
-    setUserId(savedUserId);
-
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    
-    setFromDate(`${yyyy}-${mm}-01`);
-    setToDate(`${yyyy}-${mm}-${dd}`);
-
-    if (savedUserId) {
-      apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/channels/${savedUserId}`)
-        .then((res) => {
-          const filtered = res.data.filter(c => String(c.id) === '1');
-          setChannels(filtered);
-
-          if (filtered.length > 0) {
-            setSelectedChannel('1');
-            fetchZonesForChannelOne(savedUserId, '1');
-          }
-        })
-        .catch((err) => {
-          console.error("Error loading channels via apiClient:", err);
-        });
-    }
-
-    apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/product-categories`)
-      .then((res) => {
-        setCategories(res.data);
-      })
-      .catch((err) => {
-        console.error("Error loading product categories via apiClient:", err);
-      });
+    setUserId(localStorage.getItem('afml_user_enroll') || '');
   }, []);
 
-  const fetchZonesForChannelOne = async (uId: string, channelId: string) => {
-    try {
-      const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/zones/${uId}/${channelId}`);
-      setZones(res.data);
-    } catch (err) {
-      console.error("Error fetching initial zones:", err);
-    }
-  };
-
-  // Cascading Handler 1: Channel Change -> Load Zones & Hide Old Report Grid
-  const handleChannelChange = async (val: string) => {
-    setSelectedChannel(val);
-    setSelectedZone(''); setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
-    setZones([]); setDivisions([]); setAreas([]); setTerritories([]);
-    setReportData([]); 
-    
-    if (val) {
-      try {
-        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/zones/${userId}/${val}`);
-        setZones(res.data);
-      } catch (err) {
-        console.error("Error fetching zones:", err);
-      }
-    }
-  };
-
-  // Cascading Handler 2: Zone Change -> Load Divisions & Hide Old Report Grid
-  const handleZoneChange = async (val: string) => {
-    setSelectedZone(val);
-    setSelectedDivision(''); setSelectedArea(''); setSelectedTerritory('');
-    setDivisions([]); setAreas([]); setTerritories([]);
-    setReportData([]); 
-
-    if (val) {
-      try {
-        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/divisions/${userId}/${val}`);
-        setDivisions(res.data);
-      } catch (err) {
-        console.error("Error fetching divisions:", err);
-      }
-    }
-  };
-
-  // Cascading Handler 3: Division Change -> Load Areas & Hide Old Report Grid
-  const handleDivisionChange = async (val: string) => {
-    setSelectedDivision(val);
-    setSelectedArea(''); setSelectedTerritory('');
-    setAreas([]); setTerritories([]);
-    setReportData([]); 
-
-    if (val) {
-      try {
-        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/areas/${userId}/${val}`);
-        setAreas(res.data);
-      } catch (err) {
-        console.error("Error fetching areas:", err);
-      }
-    }
-  };
-
-  // Cascading Handler 4: Area Change -> Load Territories & Hide Old Report Grid
-  const handleAreaChange = async (val: string) => {
-    setSelectedArea(val);
-    setSelectedTerritory('');
-    setTerritories([]);
-    setReportData([]); 
-
-    if (val) {
-      try {
-        const res = await apiClient.get<DropdownItem[]>(`/SummaryImsReport/parameters/territories/${userId}/${val}`);
-        setTerritories(res.data);
-      } catch (err) {
-        console.error("Error fetching territories:", err);
-      }
-    }
-  };
-
-  // Main execution trigger handler for the pivot summary grid report
   const handleShowReport = async () => {
-    if (!fromDate || !toDate || !selectedChannel) {
-      alert("Opps! Please select From Date, To Date, and Channel.");
+    setErrorBanner('');
+    if (!fromDate || !toDate) {
+      setErrorBanner("Opps! Dates cannot be null or empty. Please select From Date and To Date first.");
       return;
     }
 
-    setIsLoading(true);
     setReportData([]);
-    setDynamicDayColumns([]);
+    setIsLoading(true);
 
     try {
-      const response = await apiClient.get<ReportRow[]>(`/SummaryImsReport/summary-ims-report`, {
+      const response = await apiClient.get<ReportRow[]>('/SummaryImsReport/summary-ims-report', {
         params: {
-          fromDate: fromDate,
-          toDate: toDate,
-          prodCatId: selectedCategory || null,
-          entryBy: String(userId).trim(),
-          channelId: selectedChannel ? parseFloat(selectedChannel) : null,
-          zoneId: selectedZone ? parseFloat(selectedZone) : null,
-          divisionId: selectedDivision ? parseFloat(selectedDivision) : null,
-          areaId: selectedArea ? parseFloat(selectedArea) : null,
-          territoryId: selectedTerritory ? parseFloat(selectedTerritory) : null
+          fromDate,
+          toDate,
+          prodCatId: selectedProdCat || null,
+          entryBy: userId,
+          channelId: locationValues.channelId,
+          zoneId: locationValues.zoneId || null,
+          divisionId: locationValues.divisionId || null,
+          areaId: locationValues.areaId || null,
+          territoryId: locationValues.territoryId || null
         }
       });
 
-      const fetchedData = response.data;
+      const data = response.data;
+      setReportData(data);
 
-      if (fetchedData && fetchedData.length > 0) {
-        const dayKeys = Object.keys(fetchedData[0].daysData).sort((a, b) => {
-          const numA = parseInt(a.replace(/[^0-9]/g, ''), 10);
-          const numB = parseInt(b.replace(/[^0-9]/g, ''), 10);
-          return numA - numB;
-        });
-        setDynamicDayColumns(dayKeys);
-      } else {
-        const start = new Date(fromDate);
-        const end = new Date(toDate);
-        const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        const cols = Array.from({ length: Math.min(diffDays, 31) }, (_, i) => `Day ${i + 1}`);
-        setDynamicDayColumns(cols);
+      if (data.length > 0) {
+        setDynamicDayColumns(Object.keys(data[0].daysData || {}));
       }
-
-      setReportData(fetchedData);
-    } catch (err) {
-      console.error("Error executing report:", err);
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const responseObj = (err as any).response;
+        if (responseObj && responseObj.data) {
+          setErrorBanner(responseObj.data.error || responseObj.data.message || "Server Error.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      setErrorBanner("Opps! Failed to connect with server.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="w-full flex flex-col gap-3 font-sans text-slate-800">
-      
-      {/* Unified Parent Container: Header and Controls are now grouped into one single element */}
-      <div className="bg-white pt-2.5 pb-2 px-4 border-slate-200 flex flex-col gap-1.5 w-full shadow-none 
-      rounded-none -mt-4 sm:-mt-6">
-        
-        {/* Top Segment: Centered Titles with Right-aligned Excel Action */}
-        <div className="flex items-center justify-between relative w-full pb-0">
-          {/* Invisible spacer to handle the mathematical center balance */}
-          <div className="w-[110px] hidden sm:block" /> 
+  const handleDateChangeReset = () => {
+    setReportData([]);
+  };
 
-          {/* Core Corporate Branding Titles */}
+  return (
+    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white min-h-screen box-border shadow-none">
+      
+      {errorBanner && (
+        <div className="p-2 bg-red-100 border border-red-300 rounded-md text-red-700 text-xs font-bold shadow-sm flex items-center justify-between w-full">
+          <span>⚠️ {errorBanner}</span>
+          <button type="button" onClick={() => setErrorBanner('')} className="text-red-500 hover:text-red-800 text-sm ml-2">✕</button>
+        </div>
+      )}
+
+      {/* মেইন রাউন্ডেড বক্স কন্টেইনার */}
+      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full box-border flex flex-col gap-1">
+        
+        {/* Top Segment */}
+        <div className="flex items-center justify-between relative w-full">
+          <div className="w-[120px] hidden sm:block" /> 
+          
           <div className="text-center flex-1">
-            <h3 className="text-base font-black text-slate-900 tracking-wide uppercase">
+            <h3 className="text-[18px] font-black text-slate-900 tracking-wide uppercase">
               AKIJ FLOUR MILLS LTD.
             </h3>
-            <p className="text-[12px] font-bold text-[#D91656] uppercase tracking-wider mt-0.5">
+            <p className="text-[15px] font-bold text-[#D91656] uppercase tracking-wider mt-0.5">
               SUMMARY IMS REPORT
             </p>
           </div>
 
-          {/* Export Utility Action Trigger */}
-          <div className="min-w-[110px] text-right">
-            <button className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white 
-            font-bold text-[10px] rounded-md shadow-sm cursor-pointer transition-colors">
-               EXCEL DOWNLOAD <FileSpreadsheet className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <ExcelDownloadButton disabled={false} onClick={() => alert("Excel downloading started...")} />
         </div>
 
-        {/* Bottom Segment: Parameter Filter Elements Layout Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-2 items-end w-full">
+        {/* 🚀 ফিক্স: grid-cols-9 এবং gap-2 এর মাধ্যমে ৯টি উপাদানের গ্যাপ এবং উইডথ গাণিতিকভাবে ১০০% সমান করা হলো */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2 items-end w-full">
           
-          {/* From Date Filter Picker */}
-          <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">From Date</label>
-            <input 
-              type="date" 
-              value={fromDate} 
-              onChange={(e) => { 
-                setFromDate(e.target.value); 
-                setReportData([]); 
-              }}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-slate-50/50"
-            />
-          </div>
+          <CommonDateRange 
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={(val) => { setFromDate(val); handleDateChangeReset(); }}
+            onToDateChange={(val) => { setToDate(val); handleDateChangeReset(); }}
+          />
 
-          {/* To Date Filter Picker */}
-          <div className="flex-1 min-w-[110px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">To Date</label>
-            <input 
-              type="date" 
-              value={toDate} 
-              onChange={(e) => { 
-                setToDate(e.target.value); 
-                setReportData([]); 
-              }}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-slate-50/50"
-            />
-          </div>
+          <CommonParameters 
+            userId={userId}
+            values={locationValues}
+            onChange={(updated) => {
+              setLocationValues(updated);
+              setReportData([]); 
+            }}
+            onError={setErrorBanner}
+          />
 
-          {/* Corporate Sales Channel Selection Component */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Channel</label>
-            <select value={selectedChannel} onChange={(e) => { handleChannelChange(e.target.value); }}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate"
-            >
-              {channels.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
+          <ProductCategorySelect 
+            value={selectedProdCat}
+            onChange={(val) => {
+              setSelectedProdCat(val);
+              setReportData([]);
+            }}
+            onError={setErrorBanner}
+          />
 
-          {/* Sales Distribution Zone Picker */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Zone</label>
-            <select value={selectedZone} onChange={(e) => { handleZoneChange(e.target.value); }} disabled={!selectedChannel}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
-            >
-              <option value="">- Select -</option>
-              {zones.map((z) => (
-                <option key={z.id} value={z.id}>{z.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Corporate Division Picker */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Division</label>
-            <select value={selectedDivision} onChange={(e) => { handleDivisionChange(e.target.value); }} disabled={!selectedZone}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
-            >
-              <option value="">- Select -</option>
-              {divisions.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Local Area Picker Configuration */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Area</label>
-            <select value={selectedArea} onChange={(e) => { handleAreaChange(e.target.value); }} disabled={!selectedDivision}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
-            >
-              <option value="">- Select -</option>
-              {areas.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Regional Territory Picker Component */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Territory</label>
-            <select 
-              value={selectedTerritory} 
-              onChange={(e) => { 
-                setSelectedTerritory(e.target.value); 
-                setReportData([]); 
-              }} 
-              disabled={!selectedArea}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-100 disabled:text-slate-400 truncate"
-            >
-              <option value="">- Select -</option>
-              {territories.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Product Category Dropdown */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0 flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase truncate">Product Cat</label>
-            <select 
-              value={selectedCategory} 
-              onChange={(e) => { 
-                setSelectedCategory(e.target.value); 
-                setReportData([]); 
-              }}
-              className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate"
-            >
-              <option value="">- ALL -</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Action Form Submission Button */}
-          <div className="flex-1 min-w-[120px] sm:min-w-0">
-            <button 
-              onClick={handleShowReport} disabled={isLoading}
-              className="w-full flex items-center justify-center gap-1 h-[30px] text-white 
-              font-bold text-[10px] rounded-md shadow-md cursor-pointer transition-all active:scale-95 disabled:bg-slate-400
-              show-report"
-            >
-              SHOW REPORT
-              {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <CircleArrowRight className="w-4 h-4" />}
-    
-            </button>
-          </div>
+          <ShowReportButton 
+            onClick={handleShowReport}
+            disabled={false}
+            isLoading={isLoading}
+          />
 
         </div>
-
       </div>
 
-      {/* 3. Main Data Grid Table Engine Block */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px]">
+      {/* Main Data Grid Table Block */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px] w-full box-border">
         
         {isLoading && <RGBSpinner />}
 
@@ -405,10 +181,6 @@ export const SummaryImsReport = () => {
             <table className="w-full text-left border-collapse select-text">
               <thead>
                 <tr className="table-header text-[10px] font-bold uppercase tracking-wider sticky top-0 z-10 whitespace-nowrap">
-                  {/* <th className="p-2 border border-slate-200">Channel</th>
-                  <th className="p-2 border border-slate-200">Zone</th>
-                  <th className="p-2 border border-slate-200">Division</th>
-                  <th className="p-2 border border-slate-200">Area</th> */}
                   <th className="p-2 border border-slate-200">Territory</th>
                   <th className="p-2 border border-slate-200">Distributor</th>
                   <th className="p-2 border border-slate-200">SO Enrol</th>
@@ -425,13 +197,8 @@ export const SummaryImsReport = () => {
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 whitespace-nowrap">
                 {reportData.map((row, index) => (
                   <tr key={index} className="table-data">
-                    {/* <td className="p-2 border border-slate-200 bg-[#fff5ce]">{row.channelName}</td>
-                    <td className="p-2 border border-slate-200 bg-[#dbffcb]">{row.zoneName}</td>
-                    <td className="p-2 border border-slate-200">{row.divisionName}</td>
-                    <td className="p-2 border border-slate-200">{row.areaName}</td> */}
                     <td className="py-1 px-2 border border-slate-200 font-bold bg-[#fff6b3]">{row.territoryName}</td>
-                    <td className="py-1 px-2 border border-slate-200 text-wrap whitespace-normal min-w-[280px] max-w-[450px]
-                     bg-[#ecfae5]">{row.distribName}</td>
+                    <td className="py-1 px-2 border border-slate-200 text-wrap whitespace-normal min-w-[280px] max-w-[450px] bg-[#ecfae5]">{row.distribName}</td>
                     <td className="py-1 px-2 border border-slate-200 font-mono text-slate-500 bg-[#ffd6ba]">{row.soEnrol}</td>
                     <td className="py-1 px-2 border border-slate-200 bg-[#dbffcb]">{row.empName}</td>
                     <td className="py-1 px-2 border border-slate-200 text-slate-400 bg-[#fff5ce]">{row.joiningDate}</td>
