@@ -7,13 +7,15 @@ interface CommonParametersProps {
   values: ICommonParametersState;
   onChange: (updatedValues: ICommonParametersState) => void;
   onError: (errorMsg: string) => void;
+  onlyConsumer?: boolean; // 🚀 ফিক্স ১: শুধুমাত্র কনজ্যুমার চ্যানেল দেখানোর জন্য নতুন ফ্ল্যাগ প্রপ্স
 }
 
 export const CommonParameters = ({
   userId,
   values,
   onChange,
-  onError
+  onError,
+  onlyConsumer = false // ডিফল্ট ফলস থাকবে যেন অন্য রিপোর্টে সব চ্যানেল দেখায়
 }: CommonParametersProps) => {
   const [channels, setChannels] = useState<ICommonParameterDto[]>([]);
   const [zones, setZones] = useState<ICommonParameterDto[]>([]);
@@ -33,14 +35,24 @@ export const CommonParameters = ({
     onError("Failed to load parameters from server.");
   }, [onError]);
 
+  // ১. চ্যানেলের ডাটা লোড ও কন্ডিশনাল ফিল্টারিং
   useEffect(() => {
     if (userId) {
-      apiClient.get<ICommonParameterDto[]>(`/CommonParameters/channels/${userId}`)
-        .then((res) => setChannels(res.data))
+      apiClient.get<ICommonParameterDto[]>( `/CommonParameters/channels/${userId}`)
+        .then((res) => {
+          // 🚀 ফিক্স ২: প্রপ্স ট্রু হলে এপিআই থেকে আসা ডাটা ফিল্টার করে শুধু Consumer (id: 1) রাখবে
+          if (onlyConsumer) {
+            const filtered = res.data.filter(c => c.id === 1 || c.name?.toLowerCase() === 'consumer');
+            setChannels(filtered);
+          } else {
+            setChannels(res.data);
+          }
+        })
         .catch(handleInternalError);
     }
-  }, [userId, handleInternalError]);
+  }, [userId, onlyConsumer, handleInternalError]);
 
+  // ২. জোন ডাটা লোড
   useEffect(() => {
     if (userId && values.channelId) {
       apiClient.get<ICommonParameterDto[]>(`/CommonParameters/zones/${userId}/${values.channelId}`)
@@ -51,6 +63,7 @@ export const CommonParameters = ({
     }
   }, [userId, values.channelId, handleInternalError]);
 
+  // ৩. ডিভিশন ডাটা লোড
   useEffect(() => {
     if (userId && values.zoneId) {
       apiClient.get<ICommonParameterDto[]>(`/CommonParameters/divisions/${userId}/${values.zoneId}`)
@@ -61,6 +74,7 @@ export const CommonParameters = ({
     }
   }, [userId, values.zoneId, handleInternalError]);
 
+  // ৪. এরিয়া ডাটা লোড
   useEffect(() => {
     if (userId && values.divisionId) {
       apiClient.get<ICommonParameterDto[]>(`/CommonParameters/areas/${userId}/${values.divisionId}`)
@@ -71,6 +85,7 @@ export const CommonParameters = ({
     }
   }, [userId, values.divisionId, handleInternalError]);
 
+  // ৫. টেরিটোরি ডাটা লোড
   useEffect(() => {
     if (userId && values.areaId) {
       apiClient.get<ICommonParameterDto[]>(`/CommonParameters/territories/${userId}/${values.areaId}`)
@@ -105,7 +120,7 @@ export const CommonParameters = ({
 
   return (
     <>
-      {/* Channel */}
+      {/* Channel Select */}
       <div className="flex-1 w-full flex flex-col gap-1">
         <label htmlFor="channel-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Channel</label>
         <select 
@@ -115,13 +130,14 @@ export const CommonParameters = ({
           onChange={(e) => handleSelectChange('channelId', e.target.value ? Number(e.target.value) : '')}
           className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate box-border"
         >
+          <option value="">-- Select Channel --</option>
           {channels.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       </div>
 
-      {/* Zone */}
+      {/* Zone Select */}
       <div className="flex-1 w-full flex flex-col gap-1">
         <label htmlFor="zone-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Zone</label>
         <select 
@@ -139,7 +155,7 @@ export const CommonParameters = ({
         </select>
       </div>
 
-      {/* Division */}
+      {/* Division Select */}
       <div className="flex-1 w-full flex flex-col gap-1">
         <label htmlFor="division-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Division</label>
         <select 
@@ -157,7 +173,7 @@ export const CommonParameters = ({
         </select>
       </div>
 
-      {/* Area */}
+      {/* Area Select */}
       <div className="flex-1 w-full flex flex-col gap-1">
         <label htmlFor="area-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Area</label>
         <select 
@@ -175,7 +191,7 @@ export const CommonParameters = ({
         </select>
       </div>
 
-      {/* Territory */}
+      {/* Territory Select */}
       <div className="flex-1 w-full flex flex-col gap-1">
         <label htmlFor="territory-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Territory</label>
         <select 

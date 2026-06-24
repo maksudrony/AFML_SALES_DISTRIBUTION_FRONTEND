@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, User, HelpCircle, ChevronDown } from 'lucide-react';
+import { Menu, User, ChevronDown } from 'lucide-react';
 import { SidebarItem } from '../components/SidebarItem';
 import type { IMenuItem } from '../types/auth';
 
@@ -43,7 +43,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
   return (
     <div className="w-screen h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
       
-      {/* টপ গ্লোবাল ব্লু নেববার */}
+      {/* Top navbar */}
       <header className="w-full h-12 bg-[#1a365d] text-white flex items-center justify-between px-4 z-50 shadow-md shrink-0">
         <div className="flex items-center gap-3">
           <button 
@@ -57,14 +57,13 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </div>
 
         <div className="flex items-center gap-4 text-xs font-semibold relative">
-          <HelpCircle className="w-4 h-4 text-slate-300" />
           
           <div className="relative">
             <button 
               onClick={() => setUserDropdown(!userDropdown)}
               className="flex items-center gap-1 hover:bg-slate-800/40 px-2 py-1 rounded-md transition-colors cursor-pointer"
             >
-              <User className="w-4 h-4 bg-slate-800 rounded-full p-0.5 text-white" />
+              <User className="w-5 h-5 bg-slate-800 rounded-full p-0.5 text-white" />
               <span className="lowercase text-slate-200 font-bold">{empName}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
@@ -83,10 +82,9 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </div>
       </header>
 
-      {/* মেইন কন্টেইনার বডি */}
+      {/* main container body */}
       <div className="w-full flex flex-1 overflow-hidden relative">
         
-        {/* মাস্টার সাইডবার সেল: এখানে কোনো স্ক্রলবার তৈরি হতেই দেওয়া হবে না (overflow: hidden) */}
         <aside 
           className="h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900"
           style={{ 
@@ -100,7 +98,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
             setOpenMenuIndex(null); 
           }}
         >
-          {/* ইনজেকশন স্টাইল ট্যাগ দিয়ে হ্যামার ফিক্স */}
+
           <style dangerouslySetInnerHTML={{__html: `
             .sidebar-scroll-box::-webkit-scrollbar {
               display: none !important;
@@ -113,7 +111,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
             }
           `}} />
 
-          {/* কন্টেন্ট বক্স: সাইডবারের ভেতরের এই ডিভটা আলাদাভাবে স্ক্রল হবে এবং এটার স্ক্রলবারও হাইড থাকবে */}
+          {/* sidebar scroll hobe but scrollbar hide thakbe */}
           <div className="flex-1 w-full overflow-y-auto overflow-x-hidden sidebar-scroll-box">
             {menuTree.map((node, index) => (
               <SidebarItem 
@@ -131,7 +129,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
           </div>
         </aside>
 
-        {/* রাইট ওয়ার্কস্পেস এরিয়া */}
+        {/* main workspace area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[white] relative">
           {children}
         </main>

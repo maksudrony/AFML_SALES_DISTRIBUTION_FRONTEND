@@ -8,8 +8,10 @@ import { ProductCategorySelect } from '../../components/commonParameters/Product
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton';
 import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
 import type { ICommonParametersState } from '../../types/commonParameters';
+import type { IExcelColumnConfig } from '../../types/excelExport';
 
 interface ReportRow {
+  channelId: number; // 🚀 ফিক্স: কন্ডিশন চেক করার জন্য ইন্টারফেসে channelId যুক্ত করা হলো
   channelName: string;
   zoneName: string;
   divisionName: string;
@@ -33,7 +35,7 @@ export const SummaryImsReport = () => {
   const [selectedProdCat, setSelectedProdCat] = useState<number | ''>('');
 
   const [locationValues, setLocationValues] = useState<ICommonParametersState>({
-    channelId: 1, 
+    channelId: 1, // Consumer Channel
     zoneId: '',
     divisionId: '',
     areaId: '',
@@ -47,10 +49,28 @@ export const SummaryImsReport = () => {
     setUserId(localStorage.getItem('afml_user_enroll') || '');
   }, []);
 
+  const excelColumnsConfig: IExcelColumnConfig[] = [
+    { header: 'Territory', dataKey: 'territoryName', align: 'left', isBold: true, cellBgColor: 'FFF6B3' },
+    { header: 'Distributor', dataKey: 'distribName', align: 'left', cellBgColor: 'ECFAE5' },
+    { header: 'SO Enrol', dataKey: 'soEnrol', align: 'center', cellBgColor: 'FFD6BA' },
+    { header: 'SO Name', dataKey: 'empName', align: 'left', cellBgColor: 'DBFFCB' },
+    { header: 'Joining Date', dataKey: 'joiningDate', align: 'left', cellBgColor: 'FFF5CE' },
+
+    ...dynamicDayColumns.map(dayKey => ({
+      header: dayKey,
+      dataKey: dayKey,
+      nestedKey: 'daysData',
+      align: 'right' as const,
+      headerBgColor: 'FFD09B'
+    })),
+
+    { header: 'Grand Total', dataKey: 'grandTotal', align: 'right', isBold: true, cellBgColor: 'DBFFCB' }
+  ];
+
   const handleShowReport = async () => {
     setErrorBanner('');
     if (!fromDate || !toDate) {
-      setErrorBanner("Opps! Dates cannot be null or empty. Please select From Date and To Date first.");
+      setErrorBanner("Opps! Dates cannot be null!! Please select From Date and To Date first!");
       return;
     }
 
@@ -64,7 +84,7 @@ export const SummaryImsReport = () => {
           toDate,
           prodCatId: selectedProdCat || null,
           entryBy: userId,
-          channelId: locationValues.channelId,
+          channelId: 1,
           zoneId: locationValues.zoneId || null,
           divisionId: locationValues.divisionId || null,
           areaId: locationValues.areaId || null,
@@ -72,11 +92,14 @@ export const SummaryImsReport = () => {
         }
       });
 
-      const data = response.data;
-      setReportData(data);
+      // 🚀 ফিক্স: ডাটাবেজ থেকে যাই আসুক, টেবিলে পুশ করার আগেই শুধুমাত্র channelId = 1 ফিল্টার করে নেওয়া হলো
+      const serverData = response.data;
+      const filteredData = serverData.filter(row => row.channelId === 1 || row.channelName?.toLowerCase().includes('consumer'));
 
-      if (data.length > 0) {
-        setDynamicDayColumns(Object.keys(data[0].daysData || {}));
+      setReportData(filteredData);
+
+      if (filteredData.length > 0) {
+        setDynamicDayColumns(Object.keys(filteredData[0].daysData || {}));
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
@@ -99,7 +122,7 @@ export const SummaryImsReport = () => {
 
   return (
     <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white min-h-screen box-border shadow-none">
-      
+
       {errorBanner && (
         <div className="p-2 bg-red-100 border border-red-300 rounded-md text-red-700 text-xs font-bold shadow-sm flex items-center justify-between w-full">
           <span>⚠️ {errorBanner}</span>
@@ -107,46 +130,50 @@ export const SummaryImsReport = () => {
         </div>
       )}
 
-      {/* মেইন রাউন্ডেড বক্স কন্টেইনার */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full box-border flex flex-col gap-1">
-        
-        {/* Top Segment */}
+      <div className="bg-gradient-to-r from-orange-200 to-red-50 p-3 rounded-xl border border-slate-200 shadow-sm w-full box-border flex flex-col gap-1">
+
         <div className="flex items-center justify-between relative w-full">
-          <div className="w-[120px] hidden sm:block" /> 
-          
+          <div className="w-[120px] hidden sm:block" />
+
           <div className="text-center flex-1">
-            <h3 className="text-[18px] font-black text-slate-900 tracking-wide uppercase">
+            <h3 className="text-[16px] font-black text-slate-900 tracking-wide uppercase">
               AKIJ FLOUR MILLS LTD.
             </h3>
-            <p className="text-[15px] font-bold text-[#D91656] uppercase tracking-wider mt-0.5">
+            <p className="text-[14px] font-bold text-[#D91656] uppercase tracking-wider mt-0.5">
               SUMMARY IMS REPORT
             </p>
           </div>
 
-          <ExcelDownloadButton disabled={false} onClick={() => alert("Excel downloading started...")} />
+          <ExcelDownloadButton<ReportRow>
+            reportTitle="Akij Flour Mills Ltd. - Summary IMS Report"
+            fileName="Summary IMS Report"
+            columns={excelColumnsConfig}
+            data={reportData}
+            onError={setErrorBanner}
+          />
         </div>
 
-        {/* 🚀 ফিক্স: grid-cols-9 এবং gap-2 এর মাধ্যমে ৯টি উপাদানের গ্যাপ এবং উইডথ গাণিতিকভাবে ১০০% সমান করা হলো */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2 items-end w-full">
-          
-          <CommonDateRange 
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-1 items-end w-full">
+
+          <CommonDateRange
             fromDate={fromDate}
             toDate={toDate}
             onFromDateChange={(val) => { setFromDate(val); handleDateChangeReset(); }}
             onToDateChange={(val) => { setToDate(val); handleDateChangeReset(); }}
           />
 
-          <CommonParameters 
+          <CommonParameters
             userId={userId}
             values={locationValues}
+            onlyConsumer={true}
             onChange={(updated) => {
-              setLocationValues(updated);
-              setReportData([]); 
+              setLocationValues({ ...updated, channelId: 1 });
+              setReportData([]);
             }}
             onError={setErrorBanner}
           />
 
-          <ProductCategorySelect 
+          <ProductCategorySelect
             value={selectedProdCat}
             onChange={(val) => {
               setSelectedProdCat(val);
@@ -155,18 +182,18 @@ export const SummaryImsReport = () => {
             onError={setErrorBanner}
           />
 
-          <ShowReportButton 
+          <ShowReportButton
             onClick={handleShowReport}
-            disabled={false}
+            buttonAnimate={false}
             isLoading={isLoading}
           />
 
         </div>
       </div>
 
-      {/* Main Data Grid Table Block */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px] w-full box-border">
-        
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px] w-full
+      box-border">
+
         {isLoading && <RGBSpinner />}
 
         {!isLoading && reportData.length === 0 && (
@@ -177,39 +204,39 @@ export const SummaryImsReport = () => {
         )}
 
         {!isLoading && reportData.length > 0 && (
-          <div className="w-full overflow-auto max-h-[430px]">
-            <table className="w-full text-left border-collapse select-text">
+          <div className="w-full overflow-auto max-h-[420px]">
+            <table className="w-full text-left border-separate border-spacing-0">
               <thead>
-                <tr className="table-header text-[10px] font-bold uppercase tracking-wider sticky top-0 z-10 whitespace-nowrap">
-                  <th className="p-2 border border-slate-200">Territory</th>
-                  <th className="p-2 border border-slate-200">Distributor</th>
-                  <th className="p-2 border border-slate-200">SO Enrol</th>
-                  <th className="p-2 border border-slate-200">SO Name</th>
-                  <th className="p-2 border border-slate-200">Joining Date</th>
-                  
+                <tr className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-slate-900">
+                  <th className="p-2 bg-[#D4F6FF]">Territory</th>
+                  <th className="p-2 bg-[#D4F6FF]">Distributor</th>
+                  <th className="p-2 bg-[#D4F6FF]">SO Enrol</th>
+                  <th className="p-2 bg-[#D4F6FF]">SO Name</th>
+                  <th className="p-2 bg-[#D4F6FF]">Joining Date</th>
+
                   {dynamicDayColumns.map((dayCol, idx) => (
-                    <th key={idx} className="p-2 border border-slate-200 text-center bg-[#FFD09B]">{dayCol}</th>
+                    <th key={idx} className="p-2 text-center bg-[#FFD09B]">{dayCol}</th>
                   ))}
-                  
-                  <th className="p-2 border border-slate-200 text-center bg-[#FFD09B]">Grand Total</th>
+
+                  <th className="p-2 text-center bg-[#FFD09B]">Grand Total</th>
                 </tr>
               </thead>
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 whitespace-nowrap">
                 {reportData.map((row, index) => (
                   <tr key={index} className="table-data">
-                    <td className="py-1 px-2 border border-slate-200 font-bold bg-[#fff6b3]">{row.territoryName}</td>
-                    <td className="py-1 px-2 border border-slate-200 text-wrap whitespace-normal min-w-[280px] max-w-[450px] bg-[#ecfae5]">{row.distribName}</td>
-                    <td className="py-1 px-2 border border-slate-200 font-mono text-slate-500 bg-[#ffd6ba]">{row.soEnrol}</td>
-                    <td className="py-1 px-2 border border-slate-200 bg-[#dbffcb]">{row.empName}</td>
-                    <td className="py-1 px-2 border border-slate-200 text-slate-400 bg-[#fff5ce]">{row.joiningDate}</td>
-                    
+                    <td className="py-0 px-2 border border-slate-200 font-bold bg-[#fff6b3]">{row.territoryName}</td>
+                    <td className="py-0 px-2 border border-slate-200 text-wrap whitespace-normal min-w-[280px] max-w-[450px] bg-[#ecfae5]">{row.distribName}</td>
+                    <td className="py-0 px-2 border border-slate-200 font-mono text-slate-500 bg-[#ffd6ba]">{row.soEnrol}</td>
+                    <td className="py-0 px-2 border border-slate-200 bg-[#dbffcb]">{row.empName}</td>
+                    <td className="py-0 px-2 border border-slate-200 text-slate-400 bg-[#fff5ce]">{row.joiningDate}</td>
+
                     {dynamicDayColumns.map((dayCol, idx) => (
-                      <td key={idx} className="py-1 px-2 border border-slate-200 text-right font-mono font-bold table-data">
+                      <td key={idx} className="py-0 px-2 border border-slate-200 text-right font-mono font-bold table-data">
                         {row.daysData[dayCol] !== undefined ? row.daysData[dayCol] : 0}
                       </td>
                     ))}
-                    
-                    <td className="py-1 px-2 border border-slate-200 text-right font-mono font-extrabold bg-[#dbffcb] table-data">
+
+                    <td className="py-0 px-2 border border-slate-200 text-right font-mono font-extrabold bg-[#dbffcb] table-data">
                       {row.grandTotal}
                     </td>
                   </tr>
