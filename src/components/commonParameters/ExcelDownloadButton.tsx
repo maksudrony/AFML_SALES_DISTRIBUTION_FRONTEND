@@ -138,11 +138,12 @@ export const ExcelDownloadButton = ({
         onClick={exportToExcel}
         className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 bg-emerald-600 
         hover:bg-emerald-700 text-white font-bold text-[10px] tracking-wider rounded-md 
-        shadow-sm cursor-pointer transition-colors whitespace-nowrap"
+        shadow-sm cursor-pointer transition-colors whitespace-nowrap !flex-nowrap text-ellipsis 
+        overflow-hidden"
       >
-        <span>EXCEL DOWNLOAD</span> 
-        <FileSpreadsheet className="w-3.5 h-3.5" />
-      </button>
+        <span className="flex-shrink-0">EXCEL DOWNLOAD</span> 
+        <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
+      </button> 
     </div>
   );
 };
