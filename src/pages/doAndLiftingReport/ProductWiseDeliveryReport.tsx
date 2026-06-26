@@ -68,13 +68,23 @@ export const ProductWiseDeliveryReport = () => {
     catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const responseObj = (err as any).response;
+        
         if (responseObj && responseObj.data) {
-          setErrorBanner("Opps! Unable to generate Product Wise Delivery Report"); 
+          const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
+          
+          if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
+            setErrorBanner("Opps! Failed to connect with server");
+          } else {
+            // Database procedure error or other server-side error
+            setErrorBanner("Opps! Unable to generate Product Wise Delivery Report");
+          }
+          
           setIsLoading(false);
           return;
         }
       }
-      setErrorBanner("Opps! Failed to connect with server.");
+      // 👇 Fallback jodi direct server down thake ba status crash hoy
+      setErrorBanner("Opps! Failed to connect with server");
     } 
     
     finally {
@@ -102,7 +112,8 @@ export const ProductWiseDeliveryReport = () => {
           <p className="text-[14px] font-bold text-[#D91656] uppercase tracking-wider mt-0.5">PRODUCT WISE DELIVERY REPORT</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-5 w-full lg:w-[70%] bg-transparent justify-center mx-auto box-border">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-3 w-full 
+        lg:w-[70%] bg-transparent justify-center mx-auto box-border relative z-[99]">
 
             <CommonDateRange
               fromDate={fromDate}

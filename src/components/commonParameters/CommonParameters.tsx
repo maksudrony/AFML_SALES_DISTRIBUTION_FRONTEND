@@ -25,14 +25,24 @@ export const CommonParameters = ({
 
   const handleInternalError = useCallback((err: unknown) => {
     console.error(err);
+    
     if (err && typeof err === 'object' && 'response' in err) {
       const responseObj = (err as any).response;
+      
       if (responseObj && responseObj.data) {
-        onError(responseObj.data.error || responseObj.data.message || "Procedure failed.");
+        const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
+        
+        // Connection timeout message checking sequence with server
+        if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
+          onError("Opps! Failed to connect with server");
+        } else {
+          onError(responseObj.data.error || responseObj.data.message || "Procedure failed to load data");
+        }
         return;
       }
     }
-    onError("Failed to load parameters from server.");
+    // 👇 Server totally unmapped ba server string breakdown fallback block
+    onError("Opps! Failed to connect with server.");
   }, [onError]);
 
   useEffect(() => {

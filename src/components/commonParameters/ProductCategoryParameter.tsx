@@ -21,10 +21,21 @@ export const ProductCategorySelect = ({
       .catch((err: unknown) => {
         if (err && typeof err === 'object' && 'response' in err) {
           const responseObj = (err as any).response;
+          
           if (responseObj && responseObj.data) {
-            onError(responseObj.data.error || "Failed to load categories.");
+            const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
+            
+            // Connection timeout check
+            if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
+              onError("Opps! Failed to connect with server");
+            } else {
+              onError("Failed to load product Categories");
+            }
+            return;
           }
         }
+        // 👇 Direct network or server crash fallback
+        onError("Opps! Failed to connect with server");
       });
   }, [onError]);
 

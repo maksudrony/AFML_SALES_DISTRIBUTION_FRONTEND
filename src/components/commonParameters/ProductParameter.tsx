@@ -18,10 +18,21 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
       .catch((err: unknown) => {
         if (err && typeof err === 'object' && 'response' in err) {
           const responseObj = (err as any).response;
+          
           if (responseObj && responseObj.data) {
-            onError(responseObj.data.error || "Failed to load products.");
+            const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
+            
+            // Connection timeout check
+            if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
+              onError("Opps! Failed to connect with server");
+            } else {
+              onError("Failed to load products");
+            }
+            return;
           }
         }
+        // 👇 Direct network or server crash fallback
+        onError("Opps! Failed to connect with server");
       });
   }, [onError]);
 
@@ -61,13 +72,14 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
             flexWrap: 'nowrap',
             '&:hover': { borderColor: '#cbd5e1' }
           }),
+
           // Dropdown open list matrix context auto-break system constraint rule logic!
           option: (base) => ({
             ...base,
             fontSize: '10px',
             whiteSpace: 'normal',
             wordBreak: 'break-word',
-            padding: '6px'
+            padding: '6px',
           })
         }}
       />
