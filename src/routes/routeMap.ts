@@ -1,14 +1,12 @@
 import React from 'react';
 
-import { SummaryImsReport } from '../pages/ims-reports/SummaryImsReport'; // পাথ আপডেট করা হলো
-import { ProductWiseDeliveryReport } from '../pages/do-and-lifting-report/ProductWiseDeliveryReport';
+import { SummaryImsReport } from '../pages/imsReports/SummaryImsReport';
+import { ProductWiseDeliveryReport } from '../pages/doAndLiftingReport/ProductWiseDeliveryReport';
 
 export const routeMap: Record<string, () => React.JSX.Element> = {
-  // '/basicdata/saleschannel': SalesChannel,
+  //IMS REPORT MENU
   '/imsreport/summeryimsreport': SummaryImsReport,
+
+  //DO AND LIFTING REPORT MENU
   '/doandliftingreport/productwisedeliveryreport': ProductWiseDeliveryReport,
 };
-
-// export const routeMap: Record<string, React.ComponentType> = {
-//   // '/basicdata/saleschannel': SalesChannel,
-// };

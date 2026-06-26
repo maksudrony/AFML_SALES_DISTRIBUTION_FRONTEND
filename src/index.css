@@ -30,7 +30,7 @@
 
 /* 🚀 Global Table Data Rows Base Style */
 .table-data {
-    color: black !important;
+    /* color: black !important; */
     font-weight: bold !important;
     transition: background-color 0.15s ease;
 }

@@ -13,28 +13,25 @@ export const ShowReportButton = ({
   isLoading
 }: ShowReportButtonProps) => {
   return (
-    <div className="flex-1 min-w-[120px] sm:min-w-0 w-full">
+    <div className="w-full">
       <button 
         type="button"
         onClick={onClick} 
         className={`
-          w-full h-[28px] relative overflow-hidden rounded-md
-          flex items-center justify-center gap-1
-          text-white font-bold text-[10px]
-          shadow-md cursor-pointer transition-all active:scale-95
+          w-full h-[30px] rounded-md
+          flex items-center justify-center gap-1.5 px-4
+          text-white font-bold text-[10px] tracking-wider
+          shadow-sm cursor-pointer transition-all active:scale-95 whitespace-nowrap 
           ${(buttonAnimate || isLoading)
             ? "bg-gradient-to-r from-indigo-500 via-pink-500 via-cyan-500 to-emerald-500 bg-[length:300%_100%] animate-gradient"
             : "bg-[#D91656] hover:bg-[#b51246]"
           }
         `}
       >
-        <span className="relative z-10">
-          SHOW REPORT
-        </span>
-
+        <span>SHOW REPORT</span>
         {isLoading 
-          ? <RefreshCw className="relative z-10 w-4 h-4 animate-spin" /> 
-          : <CircleArrowRight className="relative z-10 w-4 h-4" />
+          ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> 
+          : <CircleArrowRight className="w-3.5 h-3.5" />
         }
       </button>
     </div>

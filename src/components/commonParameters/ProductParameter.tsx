@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { apiClient } from '../../api/apiClient'; 
 import type { ICommonParameterDto } from '../../types/commonParameters';
 
@@ -8,8 +9,7 @@ interface ProductParameterSelectProps {
   onError: (errorMsg: string) => void;
 }
 
-export const ProductParameterSelect =({value,onChange,onError} : ProductParameterSelectProps)=>{
-
+export const ProductParameterSelect = ({ value, onChange, onError }: ProductParameterSelectProps) => {
   const [product, setProduct] = useState<ICommonParameterDto[]>([]);
 
   useEffect(() => {
@@ -25,24 +25,52 @@ export const ProductParameterSelect =({value,onChange,onError} : ProductParamete
       });
   }, [onError]);
 
+  const options = [
+    { value: '', label: '-- All Products --' },
+    ...product.map(item => ({ value: item.id, label: item.name }))
+  ];
+
+  const currentValue = options.find(opt => opt.value === value) || options[0];
+
   return (
-  <div className="flex-1 w-full flex flex-col gap-1">
-    <label htmlFor="product-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">
-      Product
-    </label>
-    
-    <select
-      id="product-select"
-      title="Select Product"
-      value={value}
-      onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
-      className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate box-border"
-    >
-      <option value="">-- All Products --</option>
-      {product.map((item) => (
-        <option key={item.id} value={item.id}>{item.name}</option>
-      ))}
-    </select>
-  </div>
-  )
-}
+    <div className="w-full flex flex-col">
+      <label className="text-[10px] font-bold text-slate-500 uppercase truncate">
+        Product
+      </label>
+      
+      {/* 🚀 Super Shortest Approach with React-Select Built-in Styles */}
+      <Select
+        options={options}
+        value={currentValue}
+        onChange={(selected) => onChange(selected ? (selected.value as number | '') : '')}
+        isSearchable={true}
+        placeholder="Search product..."
+        className="text-[11px] font-semibold w-full"
+        
+        // Pure CSS layer style optimization overrides
+        styles={{
+          control: (base) => ({
+            ...base,
+            height: '30px',
+            minHeight: '30px',
+            borderColor: '#cbd5e1', // border-slate-300
+            borderRadius: '0.375rem', // rounded-md
+            boxShadow: 'none',
+            display: 'flex',       // Text center align automatic kaj korbe
+            alignItems: 'center',  // Strictly centers text vertically
+            flexWrap: 'nowrap',
+            '&:hover': { borderColor: '#cbd5e1' }
+          }),
+          // Dropdown open list matrix context auto-break system constraint rule logic!
+          option: (base) => ({
+            ...base,
+            fontSize: '10px',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            padding: '6px'
+          })
+        }}
+      />
+    </div>
+  );
+};

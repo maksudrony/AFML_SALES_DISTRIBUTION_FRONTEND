@@ -2,116 +2,118 @@ import React from 'react';
 import { FileSpreadsheet } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import type { IExcelColumnConfig } from '../../types/excelExport';
 
-interface ExcelDownloadButtonProps<T> {
+interface ExcelDownloadButtonProps {
+  tableId: string;
   reportTitle: string;
   fileName: string;
-  columns: IExcelColumnConfig[];
-  data: T[];
+  hasData: boolean;
   onError: (errorMsg: string) => void;
 }
 
-export const ExcelDownloadButton = <T extends Record<string, any>>({
+export const ExcelDownloadButton = ({
+  tableId,
   reportTitle,
   fileName,
-  columns,
-  data,
+  hasData,
   onError
-}: ExcelDownloadButtonProps<T>) => {
+}: ExcelDownloadButtonProps) => {
 
   const exportToExcel = async () => {
-    if (!data || data.length === 0) {
+    if (!hasData) {
       onError("Opps! please click show report At first!");
+      return;
+    }
+
+    const tableElement = document.getElementById(tableId) as HTMLTableElement;
+    if (!tableElement) {
+      onError("Error: Report table not found in DOM.");
       return;
     }
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Report');
-    const totalCols = columns.length;
 
-    // ১. টাইটেল রো ফরম্যাটিং
+    const totalCols = tableElement.rows[0]?.cells.length || 12;
     worksheet.mergeCells(1, 1, 1, totalCols);
     const titleCell = worksheet.getCell(1, 1);
     titleCell.value = reportTitle.toUpperCase();
-    titleCell.font = { name: 'Arial', size: 13, bold: true };
+    titleCell.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FFFFFF' } };
+    titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'BF124D' } };
     titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-    worksheet.getRow(1).height = 35;
+    worksheet.getRow(1).height = 40;
 
-    worksheet.addRow([]); // স্পেসিং রো
+    worksheet.addRow([]); 
 
-    // ২. হেডার রো জেনারেশন
-    const headerLabels = columns.map(col => col.header);
-    const headerRow = worksheet.addRow(headerLabels);
-    headerRow.height = 24;
-
-    headerRow.eachCell((cell, colNumber) => {
-      const colConfig = columns[colNumber - 1];
+    // HTML Table er row loop kora hoise
+    const rows = tableElement.rows;
+    
+    for (let i = 0; i < rows.length; i++) {
+      const htmlRow = rows[i];
+      const cellValues: any[] = [];
+      const isHead = htmlRow.parentElement?.tagName.toLowerCase() === 'thead';
       
-      // 🚀 ফিক্স ২: হেডার কালার যদি রিপোর্টে কাস্টম থাকে (যেমন ডে কলাম #FFD09B) তবে সেটা বসবে, নয়তো ডিফল্ট গ্রিন
-      const bgHex = colConfig.headerBgColor || '10B981'; 
-      
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: bgHex }
-      };
-      cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: bgHex === 'FFD09B' ? '000000' : 'FFFFFF' } };
-      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-      cell.border = {
-        top: { style: 'thin', color: { argb: 'CBD5E1' } },
-        bottom: { style: 'medium', color: { argb: '94A3B8' } },
-        left: { style: 'thin', color: { argb: 'CBD5E1' } },
-        right: { style: 'thin', color: { argb: 'CBD5E1' } }
-      };
-    });
+      const firstCellText = htmlRow.cells[0]?.innerText.trim() || '';
+      const isGrandTotal = firstCellText === 'Grand-Total' || htmlRow.className.includes('bg-[#DB005B]');
 
-    // ৩. ডাটা রো জেনারেশন (রিপোর্টের হুবহু কালার ও স্টাইল কম্বিনেশন কপি)
-    data.forEach((row) => {
-      const rowData = columns.map((col) => {
-        if (col.nestedKey) {
-          const nestedObject = row[col.nestedKey];
-          return nestedObject?.[col.dataKey] !== undefined ? nestedObject[col.dataKey] : 0;
+      for (let j = 0; j < htmlRow.cells.length; j++) {
+        const text = htmlRow.cells[j].innerText.trim();
+        const cleanNum = text.replace(/,/g, '');
+        if (!isHead && cleanNum !== '' && !isNaN(Number(cleanNum))) {
+          cellValues.push(Number(cleanNum));
+        } else {
+          cellValues.push(text);
         }
-        return row[col.dataKey] !== undefined ? row[col.dataKey] : '';
-      });
+      }
 
-      const insertedRow = worksheet.addRow(rowData);
-      insertedRow.height = 20;
+      const excelRow = worksheet.addRow(cellValues);
+      excelRow.height = isHead ? 26 : 22;
 
-      insertedRow.eachCell((cell, colNumber) => {
-        const colConfig = columns[colNumber - 1];
+      for (let j = 0; j < htmlRow.cells.length; j++) {
+        const htmlCell = htmlRow.cells[j];
+        const excelCell = excelRow.getCell(j + 1);
 
-        cell.font = { 
-          name: 'Arial', 
-          size: 9, 
-          bold: colConfig.isBold ?? false 
+        excelCell.border = {
+          top: { style: 'thin', color: { argb: 'CBD5E1' } },
+          bottom: { style: isHead ? 'medium' : 'thin', color: { argb: '94A3B8' } },
+          left: { style: 'thin', color: { argb: 'CBD5E1' } },
+          right: { style: 'thin', color: { argb: 'CBD5E1' } }
         };
+
+        let cellAlignment = 'right';
+        if (j === 0) cellAlignment = 'center';
+        else if (j === 1) cellAlignment = 'left';
         
-        cell.border = {
-          top: { style: 'thin', color: { argb: 'E2E8F0' } },
-          bottom: { style: 'thin', color: { argb: 'E2E8F0' } },
-          left: { style: 'thin', color: { argb: 'E2E8F0' } },
-          right: { style: 'thin', color: { argb: 'E2E8F0' } }
+        excelCell.alignment = {
+          vertical: 'middle',
+          horizontal: isHead ? 'center' : (cellAlignment as any),
+          wrapText: j === 1 
         };
 
-        cell.alignment = { 
-          vertical: 'middle', 
-          horizontal: colConfig.align || 'left' 
-        };
-
-        // 🚀 ফিক্স ৩: মেইন রিপোর্টের টেবিল ডিজাইনের হুবহু সেম কালার এক্সেলে রিফ্লেক্ট করা
-        if (colConfig.cellBgColor) {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: colConfig.cellBgColor }
-          };
+        if (isHead) {
+          excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'C9EEFF' } };
+          excelCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: '0F172A' } };
+        } else if (isGrandTotal) {
+          excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DB005B' } };
+          excelCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFF' } };
+        } else {
+          excelCell.font = { name: 'Arial', size: 9, bold: false, color: { argb: '334155' } };
+          
+          if (j === 0) {
+            excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6BA' } };
+          } else if (j === 1) {
+            excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DBFFCB' } };
+          } else {
+            excelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF' } };
+          }
         }
-      });
-    });
 
-    // ৪. ক模拟ল উইডথ অটো-ফিট
+        if (typeof excelCell.value === 'number') {
+          excelCell.numFormat = '#,##0.00';
+        }
+      }
+    }
+
     worksheet.columns.forEach((column) => {
       let maxColumnLength = 0;
       column.eachCell?.({ includeEmpty: false }, (cell, rowNumber) => {
@@ -122,7 +124,7 @@ export const ExcelDownloadButton = <T extends Record<string, any>>({
           }
         }
       });
-      column.width = Math.min(Math.max(maxColumnLength + 4, 12), 50);
+      column.width = Math.min(Math.max(maxColumnLength + 5, 14), 50);
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -130,11 +132,13 @@ export const ExcelDownloadButton = <T extends Record<string, any>>({
   };
 
   return (
-    <div className="min-w-[120px] text-right">
+    <div className="w-full">
       <button 
         type="button"
         onClick={exportToExcel}
-        className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-md shadow-sm cursor-pointer transition-colors"
+        className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 bg-emerald-600 
+        hover:bg-emerald-700 text-white font-bold text-[10px] tracking-wider rounded-md 
+        shadow-sm cursor-pointer transition-colors whitespace-nowrap"
       >
         <span>EXCEL DOWNLOAD</span> 
         <FileSpreadsheet className="w-3.5 h-3.5" />
