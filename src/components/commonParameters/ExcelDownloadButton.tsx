@@ -21,13 +21,13 @@ export const ExcelDownloadButton = ({
 
   const exportToExcel = async () => {
     if (!hasData) {
-      onError("Opps! please click show report At first!");
+      onError("Opps! please click show report At first");
       return;
     }
 
     const tableElement = document.getElementById(tableId) as HTMLTableElement;
     if (!tableElement) {
-      onError("Error: Report table not found in DOM.");
+      onError("Error: Report table not found in DOM");
       return;
     }
 

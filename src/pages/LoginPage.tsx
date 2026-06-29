@@ -1,57 +1,58 @@
 import React, { useState } from 'react';
 import { User, Lock, Grid, Eye, EyeOff } from 'lucide-react';
 import { InputField } from '../components/InputField';
-import { apiClient } from '../api/apiClient';
-import type { ILoginResponse, IMenuItem } from '../types/auth';
+import { useLoginMutation } from '../services/authApi';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { setCredentials } from '../features/auth/authSlice';
+import { storage } from '../utils/storage';
 import loginBg from '../assets/home_Image.png';
 
-interface LoginPageProps {
-  onAuthSuccess: (token: string, name: string, menuTree: IMenuItem[]) => void;
-}
-
-export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
+export const LoginPage = () => {
+  const dispatch = useAppDispatch();
   const [empEnroll, setEmpEnroll] = useState('');
   const [empPwd, setEmpPwd] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    setIsLoading(true);
 
     const enrollmentId = parseFloat(empEnroll);
     if (isNaN(enrollmentId)) {
       setErrorMsg('Invalid Enrollment ID.');
-      setIsLoading(false);
       return;
     }
 
     try {
-      const response = await apiClient.post<ILoginResponse>('/auth/login', {
-        empEnroll: enrollmentId,
-        empPwd
-      });
+      const result = await login({ empEnroll: enrollmentId, empPwd }).unwrap();
 
-      if (response.data.statusCode === 1) {
-        // 🚀 আপনার রিকোয়ারমেন্ট অনুযায়ী ডাটাবেজ থেকে আসা জেনুইন P_EMP_ENROLL ভ্যালু এখানে লোকাল স্টোরেজে লকড করা হলো
-        localStorage.setItem('afml_user_enroll', response.data.empEnroll);
+      if (result.statusCode === 1) {
+        storage.setToken(result.token || '');
+        storage.setUserName(result.empName);
+        storage.setUserEnroll(result.empEnroll);
+        storage.setMenuTree(result.menuTree);
 
-        // আপনার আগের সেই অরিজিনাল ৩টি প্যারামিটারের সেন্ট্রাল প্রপস কল
-        onAuthSuccess(response.data.token || '', response.data.empName, response.data.menuTree);
+        dispatch(setCredentials({
+          token: result.token || '',
+          empName: result.empName,
+          empEnroll: result.empEnroll,
+          menuTree: result.menuTree
+        }));
+        
+        window.location.href = '/home';
       } else {
-        setErrorMsg(response.data.message || 'Login failed.');
+        setErrorMsg(result.message || 'Login failed.');
       }
     } catch (err: any) {
-      if (err.response?.data?.message) {
-        setErrorMsg(err.response.data.message);
+      if (err.data?.message) {
+        setErrorMsg(err.data.message);
       } else {
         setErrorMsg('Server connection failed.');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -86,7 +87,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthSuccess }) => {
         </form>
       </div>
       <div className="w-full text-center relative z-20 text-[10px] sm:text-xs font-bold text-slate-700 max-w-4xl py-2 bg-white/30 backdrop-blur-sm rounded-md border border-white/20 shadow-xs mb-4">
-        সানশাইন আটা | ময়দা | সুজি
+        আটা | ময়দা | সুজি
       </div>
     </div>
   );

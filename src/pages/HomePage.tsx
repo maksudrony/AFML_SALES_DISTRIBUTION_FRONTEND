@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Menu, User, ChevronDown } from 'lucide-react';
 import { SidebarItem } from '../components/SidebarItem';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { setSidebarOpen, toggleMenuIndex } from '../features/ui/uiSlice';
 import type { IMenuItem } from '../types/auth';
 
 export const HomeDashboard = () => {
@@ -19,36 +22,19 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children }) => {
+  const dispatch = useAppDispatch();
+  const { isSidebarOpen, openMenuIndex } = useAppSelector((state) => state.ui);
+  const menuTree = useAppSelector((state) => state.auth.menuTree);
   const [userDropdown, setUserDropdown] = useState(false);
-  const [menuTree, setMenuTree] = useState<IMenuItem[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    const cachedMenu = localStorage.getItem('afml_user_menu');
-    if (cachedMenu) {
-      const parsedMenu = JSON.parse(cachedMenu) as IMenuItem[];
-      setMenuTree(parsedMenu);
-    }
-  }, []);
-
-  const handleMenuToggle = (index: number) => {
-    if (openMenuIndex === index) {
-      setOpenMenuIndex(null);
-    } else {
-      setOpenMenuIndex(index);
-    }
-  };
 
   return (
     <div className="w-screen h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
-      
-      {/* Top navbar */}
       <header className="w-full h-12 bg-[#1a365d] text-white flex items-center justify-between px-4 z-50 shadow-md shrink-0">
         <div className="flex items-center gap-3">
           <button 
-            onMouseEnter={() => setIsSidebarOpen(true)}
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            title="Toggle Sidebar"
+            onMouseEnter={() => dispatch(setSidebarOpen(true))}
+            onClick={() => dispatch(setSidebarOpen(!isSidebarOpen))}
             className="p-1 hover:bg-slate-800/40 rounded-md transition-colors cursor-pointer focus:outline-none"
           >
             <Menu className="w-5 h-5 text-white" />
@@ -57,7 +43,6 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </div>
 
         <div className="flex items-center gap-4 text-xs font-semibold relative">
-          
           <div className="relative">
             <button 
               onClick={() => setUserDropdown(!userDropdown)}
@@ -82,9 +67,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         </div>
       </header>
 
-      {/* main container body */}
       <div className="w-full flex flex-1 overflow-hidden relative">
-        
         <aside 
           className="h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900"
           style={{ 
@@ -92,34 +75,25 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
             width: isSidebarOpen ? '280px' : '60px',
             overflow: 'hidden' 
           }}
-          onMouseEnter={() => setIsSidebarOpen(true)}
+          onMouseEnter={() => dispatch(setSidebarOpen(true))}
           onMouseLeave={() => {
-            setIsSidebarOpen(false);
-            setOpenMenuIndex(null); 
+            dispatch(setSidebarOpen(false));
+            dispatch(toggleMenuIndex(-1));
           }}
         >
-
           <style dangerouslySetInnerHTML={{__html: `
-            .sidebar-scroll-box::-webkit-scrollbar {
-              display: none !important;
-              width: 0 !important;
-              height: 0 !important;
-            }
-            .sidebar-scroll-box {
-              scrollbar-width: none !important;
-              -ms-overflow-style: none !important;
-            }
+            .sidebar-scroll-box::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+            .sidebar-scroll-box { scrollbar-width: none !important; -ms-overflow-style: none !important; }
           `}} />
 
-          {/* sidebar scroll hobe but scrollbar hide thakbe */}
           <div className="flex-1 w-full overflow-y-auto overflow-x-hidden sidebar-scroll-box">
-            {menuTree.map((node, index) => (
+            {menuTree.map((node: IMenuItem, index: number) => (
               <SidebarItem 
                 key={index} 
                 item={node} 
                 isCollapsed={!isSidebarOpen} 
                 isOpen={openMenuIndex === index}
-                onToggle={() => handleMenuToggle(index)}
+                onToggle={() => dispatch(toggleMenuIndex(index))}
               />
             ))}
           </div>
@@ -129,11 +103,9 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
           </div>
         </aside>
 
-        {/* main workspace area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[white] relative">
           {children}
         </main>
-
       </div>
     </div>
   );
