@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { apiClient } from '../../api/apiClient';
-import type { ICommonParameterDto } from '../../types/commonParameters';
+import { useEffect } from 'react';
+import { useGetProductCategoriesQuery } from '../../services/productCategoryApi';
 
 interface ProductCategorySelectProps {
   value: string | number;
@@ -8,36 +7,14 @@ interface ProductCategorySelectProps {
   onError: (errorMsg: string) => void;
 }
 
-export const ProductCategorySelect = ({
-  value,
-  onChange,
-  onError
-}: ProductCategorySelectProps) => {
-  const [productCategories, setProductCategories] = useState<ICommonParameterDto[]>([]);
+export const ProductCategorySelect = ({ value, onChange, onError }: ProductCategorySelectProps) => {
+  const { data: productCategories = [], error } = useGetProductCategoriesQuery();
 
   useEffect(() => {
-    apiClient.get<ICommonParameterDto[]>('/CommonParameters/product-categories')
-      .then((res) => setProductCategories(res.data))
-      .catch((err: unknown) => {
-        if (err && typeof err === 'object' && 'response' in err) {
-          const responseObj = (err as any).response;
-          
-          if (responseObj && responseObj.data) {
-            const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
-            
-            // Connection timeout check
-            if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
-              onError("Opps! Failed to connect with server");
-            } else {
-              onError("Failed to load product Categories");
-            }
-            return;
-          }
-        }
-        // 👇 Direct network or server crash fallback
-        onError("Opps! Failed to connect with server");
-      });
-  }, [onError]);
+    if (error) {
+      onError("Failed to load product Categories");
+    }
+  }, [error, onError]);
 
   return (
     <div className="flex-1 w-full flex flex-col">

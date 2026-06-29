@@ -35,6 +35,17 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['product-detail', 'product-wise-delivery-report', 'summary-ims-report'], 
+  // alada alada cache tags
+  tagTypes: [
+    'ProductCategory',
+    'ProductDetail',
+    'Channels',
+    'Zones',
+    'Divisions',
+    'Areas',
+    'Territories',
+    'ProductWiseDeliveryReport', 
+    'SummaryImsReport'
+  ], 
   endpoints: () => ({}),
 });

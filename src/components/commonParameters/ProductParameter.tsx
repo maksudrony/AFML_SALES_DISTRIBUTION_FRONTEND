@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Select from 'react-select';
-import { apiClient } from '../../api/apiClient'; 
-import type { ICommonParameterDto } from '../../types/commonParameters';
+import { useGetProductDetailsQuery } from '../../services/productParameterApi';
 
 interface ProductParameterSelectProps {
   value: string | number;
@@ -10,31 +9,13 @@ interface ProductParameterSelectProps {
 }
 
 export const ProductParameterSelect = ({ value, onChange, onError }: ProductParameterSelectProps) => {
-  const [product, setProduct] = useState<ICommonParameterDto[]>([]);
+  const { data: product = [], error } = useGetProductDetailsQuery();
 
   useEffect(() => {
-    apiClient.get<ICommonParameterDto[]>('/CommonParameters/product-detail')  
-      .then((res) => setProduct(res.data))
-      .catch((err: unknown) => {
-        if (err && typeof err === 'object' && 'response' in err) {
-          const responseObj = (err as any).response;
-          
-          if (responseObj && responseObj.data) {
-            const apiErrorMsg = responseObj.data.error || JSON.stringify(responseObj.data);
-            
-            // Connection timeout check
-            if (apiErrorMsg && apiErrorMsg.includes("Connection request timed out")) {
-              onError("Opps! Failed to connect with server");
-            } else {
-              onError("Failed to load products");
-            }
-            return;
-          }
-        }
-        // 👇 Direct network or server crash fallback
-        onError("Opps! Failed to connect with server");
-      });
-  }, [onError]);
+    if (error) {
+      onError("Failed to load products");
+    }
+  }, [error, onError]);
 
   const options = [
     { value: '', label: '-- All Products --' },
@@ -49,7 +30,6 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
         Product
       </label>
       
-      {/* 🚀 Super Shortest Approach with React-Select Built-in Styles */}
       <Select
         options={options}
         value={currentValue}
@@ -57,23 +37,19 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
         isSearchable={true}
         placeholder="Search product..."
         className="text-[11px] font-semibold w-full"
-        
-        // Pure CSS layer style optimization overrides
         styles={{
           control: (base) => ({
             ...base,
             height: '30px',
             minHeight: '30px',
-            borderColor: '#cbd5e1', // border-slate-300
-            borderRadius: '0.375rem', // rounded-md
+            borderColor: '#cbd5e1',
+            borderRadius: '0.375rem',
             boxShadow: 'none',
-            display: 'flex',       // Text center align automatic kaj korbe
-            alignItems: 'center',  // Strictly centers text vertically
+            display: 'flex',       
+            alignItems: 'center',  
             flexWrap: 'nowrap',
             '&:hover': { borderColor: '#cbd5e1' }
           }),
-
-          // Dropdown open list matrix context auto-break system constraint rule logic!
           option: (base) => ({
             ...base,
             fontSize: '10px',

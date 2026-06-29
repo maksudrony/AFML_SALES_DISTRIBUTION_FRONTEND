@@ -1,0 +1,29 @@
+import { baseApi } from './api';
+
+// এন্টারপ্রাইজ রিকোয়েস্ট প্যারামিটার ইন্টারফেস ডিফাইন
+export interface ISummaryImsReportParams {
+  fromDate: string;
+  toDate: string;
+  prodCatId: number | null;
+  entryBy: string;
+  channelId: number | null;
+  zoneId: number | null;
+  divisionId: number | null;
+  areaId: number | null;
+  territoryId: number | null;
+}
+
+export const summaryImsReportApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getSummaryImsReport: builder.query<any[], ISummaryImsReportParams>({
+      query: (params) => ({
+        url: '/SummaryImsReport/summary-ims-report',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['SummaryImsReport'],
+    }),
+  }),
+});
+
+export const { useLazyGetSummaryImsReportQuery } = summaryImsReportApi;
