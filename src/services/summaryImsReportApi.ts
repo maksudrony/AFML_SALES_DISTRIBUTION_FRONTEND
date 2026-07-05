@@ -13,9 +13,19 @@ export interface ISummaryImsReportParams {
   territoryId: number | null;
 }
 
+export interface IImsReportRow {
+  territoryName: string;
+  distribName: string;
+  soEnrol: string;
+  empName: string;
+  joiningDate: string;
+  grandTotal: number;
+  daysData?: Record<string, number>;
+}
+
 export const summaryImsReportApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getSummaryImsReport: builder.query<any[], ISummaryImsReportParams>({
+    getSummaryImsReport: builder.query<IImsReportRow[], ISummaryImsReportParams>({
       query: (params) => ({
         url: '/SummaryImsReport/summary-ims-report',
         method: 'GET',

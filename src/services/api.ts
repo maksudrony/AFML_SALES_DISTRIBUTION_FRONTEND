@@ -21,6 +21,21 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   api,
   extraOptions
 ) => {
+  // parameter pathanor age parameter er null value undefine kortesi jate jhamela na kore!
+  if (args && typeof args === 'object' && 'params' in args && args.params) {
+    const originalParams = args.params as Record<string, unknown>;
+    
+    const cleanParams = Object.entries(originalParams).reduce((acc, [key, value]) => {
+
+      if (value !== null && value !== undefined && value !== '') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, unknown>);
+
+    args.params = cleanParams;
+  }
+
   const result = await rawBaseQuery(args, api, extraOptions);
   
   if (result.error && result.error.status === 401) {
@@ -35,7 +50,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithReauth,
-  // alada alada cache tags
   tagTypes: [
     'ProductCategory',
     'ProductDetail',

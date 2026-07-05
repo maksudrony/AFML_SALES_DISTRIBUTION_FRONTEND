@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { RGBSpinner } from '../../components/RGBSpinner';
 import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
@@ -15,6 +15,8 @@ import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDown
 import type { ICommonParametersState } from '../../types/commonParameters';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useLazyGetSummaryImsReportQuery } from '../../services/summaryImsReportApi';
+import type { IImsReportRow } from '../../services/summaryImsReportApi';
+
 
 export const SummaryImsReport = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -33,27 +35,11 @@ export const SummaryImsReport = () => {
     territoryId: ''
   });
 
-  const [reportData, setReportData] = useState<any[]>([]);
+  const [showReport, setShowReport] = useState<boolean>(false);
   
-  // 🚀 ডম রেন্ডারিং গ্যাপ ফিক্স করার জন্য লোকাল লোডিং স্টেট
   const [isLocalLoading, setIsLocalLoading] = useState<boolean>(false);
 
-  const [triggerReport, { data: fetchedData, isFetching, error }] = useLazyGetSummaryImsReportQuery();
-
-  // 🚀 ডাটা প্রসেস হয়ে লোকাল স্টেটে বসা শেষ হলে তবেই লোডিং অফ হবে
-  useEffect(() => {
-    if (fetchedData) {
-      setReportData(fetchedData);
-      setIsLocalLoading(false); // 🚀 ডম রেন্ডারিং সিঙ্ক কমপ্লিট
-    }
-  }, [fetchedData]);
-
-  useEffect(() => {
-    if (error) {
-      setErrorBanner("Opps! Failed to connect with server or generate report");
-      setIsLocalLoading(false);
-    }
-  }, [error]);
+  const [triggerReport, { data: reportData = [], isFetching }] = useLazyGetSummaryImsReportQuery();
 
   const formatDecimal = (num: number | undefined | null): string => {
     if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
@@ -61,7 +47,7 @@ export const SummaryImsReport = () => {
   };
 
   const handleLocationChange = (field: keyof ICommonParametersState, value: number | '') => {
-    setReportData([]); 
+    setShowReport(false);
     setLocationValues((prev) => {
       const updated = { ...prev, [field]: value };
       if (field === 'channelId') {
@@ -77,29 +63,40 @@ export const SummaryImsReport = () => {
     });
   };
 
-  const handleShowReport = () => {
+  const handleShowReport = async () => {
     setErrorBanner('');
     if (!fromDate || !toDate) {
       setErrorBanner("Opps! Dates cannot be null!! Please select From Date and To Date first!");
       return;
     }
-    setReportData([]);
-    setIsLocalLoading(true);
 
-    triggerReport({
-      fromDate,
-      toDate,
-      prodCatId: selectedProdCat === '' ? '' : selectedProdCat,
-      entryBy: userId,
-      channelId: locationValues.channelId === '' ? '' : locationValues.channelId,
-      zoneId: locationValues.zoneId === '' ? '' : locationValues.zoneId,
-      divisionId: locationValues.divisionId === '' ? '' : locationValues.divisionId,
-      areaId: locationValues.areaId === '' ? '' : locationValues.areaId,
-      territoryId: locationValues.territoryId === '' ? '' : locationValues.territoryId
-    }, false);
+    setShowReport(false);
+    setIsLocalLoading(true); // spinner started
+
+    try {
+      const res = await triggerReport({
+        fromDate,
+        toDate,
+        prodCatId: selectedProdCat === '' ? null : selectedProdCat, // '' এর বদলে null
+        entryBy: userId,
+        channelId: locationValues.channelId === '' ? null : locationValues.channelId,
+        zoneId: locationValues.zoneId === '' ? null : locationValues.zoneId,
+        divisionId: locationValues.divisionId === '' ? null : locationValues.divisionId,
+        areaId: locationValues.areaId === '' ? null : locationValues.areaId,
+        territoryId: locationValues.territoryId === '' ? null : locationValues.territoryId
+      }, false).unwrap();
+
+      if (res) {
+        setShowReport(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorBanner("Opps! Failed to connect with server or generate report");
+    } finally {
+      setIsLocalLoading(false); 
+    }
   };
 
-  // 🚀 নেটওয়ার্ক ফেচিং অথবা লোকাল রেন্ডারিং—যেকোনো একটা চালু থাকলেই স্পিনার ঘুরবে
   const showSpinner = isFetching || isLocalLoading;
 
   return (
@@ -118,20 +115,54 @@ export const SummaryImsReport = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-10 items-end gap-1.5 w-full bg-transparent">
-            <CommonDateRange
-              fromDate={fromDate}
-              toDate={toDate}
-              onFromDateChange={(val) => { setFromDate(val); setReportData([]); }} 
-              onToDateChange={(val) => { setToDate(val); setReportData([]); }}     
-            />
+          <CommonDateRange
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={(val) => { setFromDate(val); setShowReport(false);; }} 
+            onToDateChange={(val) => { setToDate(val); setShowReport(false);; }}     
+          />
 
-            <ChannelSelect userId={userId} value={locationValues.channelId} onlyConsumer={true} onChange={(val) => handleLocationChange('channelId', val)} onError={setErrorBanner} />
-            <ZoneSelect userId={userId} channelId={locationValues.channelId} value={locationValues.zoneId} onChange={(val) => handleLocationChange('zoneId', val)} onError={setErrorBanner} />
-            <DivisionSelect userId={userId} zoneId={locationValues.zoneId} value={locationValues.divisionId} onChange={(val) => handleLocationChange('divisionId', val)} onError={setErrorBanner} />
-            <AreaSelect userId={userId} divisionId={locationValues.divisionId} value={locationValues.areaId} onChange={(val) => handleLocationChange('areaId', val)} onError={setErrorBanner} />
-            <TerritorySelect userId={userId} areaId={locationValues.areaId} value={locationValues.territoryId} onChange={(val) => handleLocationChange('territoryId', val)} onError={setErrorBanner} />
+          <ChannelSelect 
+            userId={userId} 
+            value={locationValues.channelId} 
+            onlyConsumer={true} 
+            onChange={(val) => handleLocationChange('channelId', val)} 
+            onError={setErrorBanner} 
+          />
+          <ZoneSelect 
+            userId={userId} 
+            channelId={locationValues.channelId} 
+            value={locationValues.zoneId} 
+            onChange={(val) => handleLocationChange('zoneId', val)} 
+            onError={setErrorBanner} 
+          />
+          <DivisionSelect 
+            userId={userId} 
+            zoneId={locationValues.zoneId} 
+            value={locationValues.divisionId} 
+            onChange={(val) => handleLocationChange('divisionId', val)} 
+            onError={setErrorBanner} 
+          />
+          <AreaSelect 
+            userId={userId} 
+            divisionId={locationValues.divisionId} 
+            value={locationValues.areaId} 
+            onChange={(val) => handleLocationChange('areaId', val)} 
+            onError={setErrorBanner} 
+          />
+          <TerritorySelect 
+            userId={userId} 
+            areaId={locationValues.areaId} 
+            value={locationValues.territoryId} 
+            onChange={(val) => handleLocationChange('territoryId', val)} 
+            onError={setErrorBanner} 
+          />
 
-            <ProductCategorySelect value={selectedProdCat} onChange={(val) => { setSelectedProdCat(val); setReportData([]); }} onError={setErrorBanner} />
+          <ProductCategorySelect 
+            value={selectedProdCat} 
+            onChange={(val) => { setSelectedProdCat(val); setShowReport(false); }} 
+            onError={setErrorBanner} 
+          />
 
           <div className="w-full">
             <ShowReportButton onClick={handleShowReport} buttonAnimate={false} isLoading={showSpinner} />
@@ -143,17 +174,16 @@ export const SummaryImsReport = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px] w-full box-border">
-        {/* 🚀 কম্বাইন্ড কন্ডিশনাল স্পিনার সাপোর্টেড লেয়ার */}
         {showSpinner && <RGBSpinner />}
         
-        {!showSpinner && reportData.length === 0 && (
+        {!showSpinner && ( !showReport || reportData.length === 0 ) && (
           <div className="flex flex-col items-center justify-center p-20 text-slate-400 gap-2">
             <Search className="w-8 h-8 text-slate-300" />
             <p className="text-xs font-medium">Please click 'Show Report'.</p>
           </div>
         )}
         
-        {!showSpinner && reportData.length > 0 && (
+        {!showSpinner && showReport && reportData.length > 0 && (
           <div className="w-full overflow-auto max-h-[420px]">
             <table id="summary-ims-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
@@ -163,23 +193,23 @@ export const SummaryImsReport = () => {
                   <th className="p-1 px-2 bg-[#D4F6FF]">SO Enrol</th>
                   <th className="p-1 px-2 bg-[#D4F6FF]">SO Name</th>
                   <th className="p-1 px-2 bg-[#D4F6FF]">Joining Date</th>
-                  {Object.keys(reportData[0].daysData || {}).map((dayCol, idx) => (
+                  {Object.keys(reportData[0]?.daysData || {}).map((dayCol, idx) => (
                     <th key={idx} className="p-1 px-2 text-center bg-[#FFD09B]">{dayCol}</th>
                   ))}
                   <th className="p-1 px-2 text-center bg-[#FFD09B]">Grand Total</th>
                 </tr>
               </thead>
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 whitespace-nowrap">
-                {reportData.map((row: any, index: number) => (
+                {reportData.map((row: IImsReportRow, index: number) => (
                   <tr key={index} className="table-data">
                     <td className="py-0 px-2 border border-slate-200 font-bold bg-[#fff6b3]">{row.territoryName}</td>
                     <td className="py-0 px-2 border border-slate-200 text-wrap whitespace-normal min-w-[280px] max-w-[450px] bg-[#ecfae5]">{row.distribName}</td>
                     <td className="py-0 px-2 border border-slate-200 text-slate-600 bg-[#ffd6ba]">{row.soEnrol}</td>
                     <td className="py-0 px-2 border border-slate-200 bg-[#dbffcb]">{row.empName}</td>
                     <td className="py-0 px-2 border border-slate-200 text-slate-600 bg-[#fff5ce]">{row.joiningDate}</td>
-                    {Object.keys(reportData[0].daysData || {}).map((dayCol, idx) => (
+                    {Object.keys(reportData[0]?.daysData || {}).map((dayCol, idx) => (
                       <td key={idx} className="py-0 px-2 border border-slate-200 text-right font-mono">
-                        {row.daysData[dayCol] !== undefined ? formatDecimal(row.daysData[dayCol]) : 0}
+                        {row.daysData?.[dayCol] !== undefined ? formatDecimal(row.daysData[dayCol]) : 0}
                       </td>
                     ))} 
                     <td className="py-0 px-2 border border-slate-200 text-right bg-[#dbffcb]">{formatDecimal(row.grandTotal)}</td>

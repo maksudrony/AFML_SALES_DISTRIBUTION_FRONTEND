@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
 import { ProductParameterSelect } from '../../components/commonParameters/ProductParameter';
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton'; 
@@ -8,59 +8,57 @@ import { Search } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useLazyGetProductWiseDeliveryReportQuery } from '../../services/productWiseDeliveryReportApi';
 
+
 export const ProductWiseDeliveryReport = () => {
   const user = useAppSelector((state) => state.auth.user);
   const userId = user?.empEnroll || '';
+  const tokenId = useAppSelector((state) => state.auth.token) || '';
 
   const [errorBanner, setErrorBanner] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<number | ''>('');
-  const [reportData, setReportData] = useState<any[]>([]);
+  const [showReport, setShowReport] = useState<boolean>(false);
 
-  // 🚀 ডম রেন্ডারিং গ্যাপ ফিক্স করার জন্য লোকাল লোডিং স্টেট
   const [isLocalLoading, setIsLocalLoading] = useState<boolean>(false);
 
-  const [triggerReport, { data: fetchedData, isFetching, error }] = useLazyGetProductWiseDeliveryReportQuery();
+  const [triggerReport, { data: reportData = [], isFetching }] = useLazyGetProductWiseDeliveryReportQuery();
 
-  // 🚀 ডাটা প্রসেস হয়ে লোকাল স্টেটে বসা শেষ হলে তবেই লোডিং অফ হবে
-  useEffect(() => {
-    if (fetchedData) {
-      setReportData(fetchedData);
-      setIsLocalLoading(false); // 🚀 ডম রেন্ডারিং সিঙ্ক কমপ্লিট
-    }
-  }, [fetchedData]);
-
-  useEffect(() => {
-    if (error) {
-      setErrorBanner("Opps! Failed to connect with server or generate report");
-      setIsLocalLoading(false);
-    }
-  }, [error]);
 
   const formatDecimal = (num: number | undefined | null): string => {
     if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
-  const handleShowReport = () => {
+  const handleShowReport = async () => {
     setErrorBanner('');
     if (!fromDate || !toDate) {
       setErrorBanner("Opps! Dates cannot be null!! Please select From Date and To Date first!");
       return;
     }
-    setReportData([]); 
-    setIsLocalLoading(true); // 🚀 ক্লিক করার সাথে সাথে লোকাল লোডিং অন হবে
+    
+    setShowReport(false);
+    setIsLocalLoading(true);
 
-    triggerReport({
-      fromDate,
-      todate: toDate,
-      entryBy: userId,
-      productId: selectedProduct === '' ? '' : selectedProduct
-    }, false); 
+    try {
+      const res = await triggerReport({
+        fromDate,
+        todate: toDate,
+        entryBy: userId,
+        productId: selectedProduct === '' ? null : selectedProduct
+      }, false).unwrap();
+      
+      if (res) {
+        setShowReport(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorBanner("Opps! Failed to connect with server or generate report");
+    } finally {
+      setIsLocalLoading(false);
+    }
   };
 
-  // 🚀 নেটওয়ার্ক ফেচিং অথবা লোকাল রেন্ডারিং—যেকোনো একটা চালু থাকলেই স্পিনার ঘুরবে
   const showSpinner = isFetching || isLocalLoading;
 
   return (
@@ -82,12 +80,12 @@ export const ProductWiseDeliveryReport = () => {
           <CommonDateRange
             fromDate={fromDate}
             toDate={toDate}
-            onFromDateChange={(val) => { setFromDate(val); setReportData([]); }} 
-            onToDateChange={(val) => { setToDate(val); setReportData([]); }}   
+            onFromDateChange={(val) => { setFromDate(val); setShowReport(false);; }} 
+            onToDateChange={(val) => { setToDate(val); setShowReport(false); }}   
           />
           <ProductParameterSelect 
             value={selectedProduct} 
-            onChange={(val) => { setSelectedProduct(val); setReportData([]); }} 
+            onChange={(val) => { setSelectedProduct(val); setShowReport(false); }} 
             onError={setErrorBanner} 
           />
           <ShowReportButton onClick={handleShowReport} buttonAnimate={false} isLoading={showSpinner} />
@@ -96,17 +94,16 @@ export const ProductWiseDeliveryReport = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[300px] w-full box-border">
-        {/* 🚀 কম্বাইন্ড কন্ডিশনাল স্পিনার সাপোর্টেড লেয়ার */}
         {showSpinner && <RGBSpinner />}
         
-        {!showSpinner && reportData.length === 0 && (
+        {!showSpinner && ( !showReport || reportData.length === 0 ) && (
           <div className="flex flex-col items-center justify-center p-20 text-slate-400 gap-2">
             <Search className="w-8 h-8 text-slate-300" />
             <p className="text-xs font-medium">Please click 'Show Report'.</p>
           </div>
         )}
         
-        {!showSpinner && reportData.length > 0 && (
+        {!showSpinner && showReport && reportData.length > 0 && (
           <div className="w-full overflow-auto max-h-[420px]">
             <table id="delivery-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
@@ -126,7 +123,7 @@ export const ProductWiseDeliveryReport = () => {
                 </tr>
               </thead> 
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 text-end">
-                {reportData.map((row: any, index: number) => {
+                {reportData.map((row, index) => {
                   const isGrandTotal = row.prodCode === 'Grand-Total';
                   return (
                     <tr key={index} className={isGrandTotal ? "bg-[#DB005B] text-white font-bold" : "table-data"}>

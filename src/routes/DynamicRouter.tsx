@@ -1,17 +1,17 @@
 import { useLocation } from 'react-router-dom';
 import { routeMap } from './routeMap';
-import { HomeDashboard } from '../pages/HomePage'; // সরাসরি HomePage থেকে কন্টেন্ট ইমপোর্ট
+import { HomeDashboard } from '../pages/HomePage'; // directly import the HomeDashboard component
 
 export default function DynamicRouter() {
   const location = useLocation();
   const currentNormalizedPath = location.pathname ? location.pathname.toLowerCase() : '';
 
-  // যদি ইউআরএল /home হয়, তবে সরাসরি HomePage-এর ভেতরের ড্যাশবোর্ড রেন্ডার হবে
+  // JODI URL /home hoy tahole directly HomeDashboard component render korbe
   if (currentNormalizedPath === '/home') {
     return <HomeDashboard />;
   }
 
-  // বাকি অন্য যেকোনো পাথের জন্য রেজিস্ট্রি খাতা চেক করবে
+  // will check if the current path exists in the routeMap and render the corresponding component
   const TargetComponent = routeMap[currentNormalizedPath];
 
   if (!TargetComponent) {
