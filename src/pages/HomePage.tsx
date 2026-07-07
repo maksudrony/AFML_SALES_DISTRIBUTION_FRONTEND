@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, User, ChevronDown } from 'lucide-react';
+import { Menu, User, ChevronDown, X, LogOut, CircleUserRound } from 'lucide-react'; // X আইকনটি যোগ করা হয়েছে
 import { SidebarItem } from '../components/SidebarItem';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -28,32 +28,110 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
   const [userDropdown, setUserDropdown] = useState(false);
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
-      <header className="w-full h-12 bg-[#1a365d] text-white flex items-center justify-between px-4 z-50 shadow-md shrink-0">
-        <div className="flex items-center gap-3">
+    // w-screen এর বদলে w-full এবং h-screen এর বদলে h-[100dvh] (Dynamic Viewport Height) ব্যবহার করা হয়েছে
+    <div className="w-full h-[100dvh] flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
+      
+      {/* Navbar Area */}
+      <nav className="w-full h-12 bg-gradient-to-r from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC]
+      backdrop-blur-xl border border-white/10 shadow-2xl text-white flex items-center justify-between px-3 sm:px-4 z-50 shrink-0">
+        
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button 
             title="Toggle Sidebar"
-            onMouseEnter={() => dispatch(setSidebarOpen(true))}
+            onMouseEnter={() => window.innerWidth > 768 && dispatch(setSidebarOpen(true))}
             onClick={() => dispatch(setSidebarOpen(!isSidebarOpen))}
-            className="p-1 hover:bg-slate-800/40 rounded-md transition-colors cursor-pointer focus:outline-none"
+            className="p-1 hover:bg-slate-800/40 rounded-md transition-colors cursor-pointer focus:outline-none shrink-0"
           >
-            <Menu className="w-5 h-5 text-white" />
+            {isSidebarOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
           </button>
-          <span className="font-bold text-xs tracking-wider uppercase">Sales & Distribution Portal</span>
+          
+          <div className="tracking-wider uppercase text-xs sm:text-sm font-semibold truncate">
+            <span className="inline md:hidden">AFML Sales & Dist.</span>
+            
+            <span className="hidden md:inline">AFML Sales & Distribution Portal</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-semibold relative">
+        {/* Right Side: Profile Action */}
+        <div className="flex items-center gap-2 sm:gap-4 text-xs font-semibold relative shrink-0">
           <div className="relative">
-            <button 
-              onClick={() => setUserDropdown(!userDropdown)}
-              className="flex items-center gap-1 hover:bg-slate-800/40 px-2 py-1 rounded-md transition-colors cursor-pointer"
-            >
-              <User className="w-5 h-5 bg-slate-800 rounded-full p-0.5 text-white" />
-              <span className="lowercase text-slate-200 font-bold">{empName}</span>
-              <ChevronDown className="w-3 h-3" />
-            </button>
+            
+            {/* RGB Gradient Outer Border Box */}
+            <div className="p-[2.5px] bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-amber-400 
+                rounded-full flex items-center justify-center shadow-md animate-rgb-border">
+                  
+              <button 
+                onClick={() => setUserDropdown(!userDropdown)}
+                className="flex items-center gap-1.5 sm:gap-2 bg-slate-900/30 backdrop-blur-md hover:bg-slate-900/50
+                px-3 sm:px-4 py-1 rounded-full transition-colors cursor-pointer focus:outline-none text-white框架"
+              >
+                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full p-0.5 text-white" />
+                <span className="uppercase text-white truncate max-w-[70px] sm:max-w-none">{empName}</span>
+                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 p-0.5 text-white/70" />
+              </button>
 
+            </div>
+
+            {/* Dropdown Menu */}
             {userDropdown && (
+              <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-white/20 bg-white/90
+                  backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 duration-200 z-50"
+              >
+                {/* Arrow */}
+                {/* <div className="absolute -top-2 right-6 h-4 w-4 rotate-45 border-l border-t border-white/20 bg-white"/> */}
+
+                {/* RGB Top Border */}
+                <div className="h-1 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-amber-400" />
+
+                {/* User Information */}
+                <div className="flex items-center gap-4 p-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br
+                      from-cyan-400 via-violet-500 to-pink-500 shadow-lg">
+                    <CircleUserRound
+                      size={28}
+                      className="text-white"
+                    />
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate text-xs font-bold uppercase text-slate-800">{empName}</span>
+                    <span className="text-xs text-slate-500">Sales & Distribution Portal</span>
+                    <span className="mt-1 inline-flex w-fit rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                      ● Online
+                    </span>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="mx-5 border-t border-slate-200" />
+
+                {/* Logout Button */}
+                <button
+                  onClick={onLogout}
+                  className="group flex w-full items-center justify-between p-3 transition-all duration-200 hover:bg-red-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 transition-all duration-200
+                        group-hover:bg-red-500">
+                      <LogOut
+                        size={18}
+                        className="text-red-600 group-hover:text-white"
+                      />
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-xs font-bold text-slate-800">Logout</p>
+                      <p className="text-xs text-slate-500">End current session</p>
+                    </div>
+                  </div>
+
+                  <ChevronDown className="-rotate-90 h-4 w-4 text-slate-400 transition-transform duration-200 group-hover:translate-x-1" />
+                </button>
+              </div>
+            )}
+
+            {/* Dropdown Menu Overlay */}
+            {/*{userDropdown && (
               <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg border border-slate-200 py-1 z-50 text-slate-800">
                 <button 
                   onClick={onLogout}
@@ -62,23 +140,27 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
                   Logout Session
                 </button>
               </div>
-            )}
+            )} */}
           </div>
         </div>
-      </header>
+      </nav>
 
+      {/* Main Content Body (Sidebar + Content Area) */}
       <div className="w-full flex flex-1 overflow-hidden relative">
+        
+        {/* Sidebar Layer */}
         <aside 
-          className="h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900"
-          style={{ 
-            backgroundColor: '#313647',
-            width: isSidebarOpen ? '280px' : '60px',
-            overflow: 'hidden' 
-          }}
-          onMouseEnter={() => dispatch(setSidebarOpen(true))}
+          className={`h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900
+            absolute md:relative top-0 bottom-0 left-0
+            ${isSidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0 md:w-[60px]'}
+          `}
+          style={{ backgroundColor: '#313647' }}
+          onMouseEnter={() => window.innerWidth > 768 && dispatch(setSidebarOpen(true))}
           onMouseLeave={() => {
-            dispatch(setSidebarOpen(false));
-            dispatch(toggleMenuIndex(-1));
+            if (window.innerWidth > 768) {
+              dispatch(setSidebarOpen(false));
+              dispatch(toggleMenuIndex(-1));
+            }
           }}
         >
           <style dangerouslySetInnerHTML={{__html: `
@@ -91,7 +173,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
               <SidebarItem 
                 key={index} 
                 item={node} 
-                isCollapsed={!isSidebarOpen} 
+                isCollapsed={window.innerWidth > 768 ? !isSidebarOpen : false} 
                 isOpen={openMenuIndex === index}
                 onToggle={() => dispatch(toggleMenuIndex(index))}
               />
@@ -103,7 +185,16 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[white] relative">
+        {/* Mobile Sidebar Backdrop Layer */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+            onClick={() => dispatch(setSidebarOpen(false))}
+          />
+        )}
+
+        {/* Main Workspace Area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white relative w-full">
           {children}
         </main>
       </div>

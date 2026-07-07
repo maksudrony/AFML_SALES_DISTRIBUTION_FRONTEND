@@ -65,6 +65,22 @@
   animation: gradient 1.5s ease infinite;
 }
 
+@keyframes rgbBorderMove {
+  0% {
+     background-position: 0% 50%; 
+    }
+  50% { 
+    background-position: 100% 50%; 
+  }
+  100% { 
+    background-position: 0% 50%; 
+  }
+}
+
+.animate-rgb-border {
+  background-size: 200% 200% !important;
+  animation: rgbBorderMove 3s linear infinite !important;
+}
 thead th {
   position: sticky;
   top: 0;
