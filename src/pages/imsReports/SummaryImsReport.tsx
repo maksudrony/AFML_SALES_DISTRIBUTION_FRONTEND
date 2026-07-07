@@ -42,7 +42,7 @@ export const SummaryImsReport = () => {
   const [triggerReport, { data: reportData = [], isFetching }] = useLazyGetSummaryImsReportQuery();
 
   const formatDecimal = (num: number | undefined | null): string => {
-    if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
+    if (!num || isNaN(Number(num))) return '';
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
@@ -108,7 +108,9 @@ export const SummaryImsReport = () => {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-orange-200 to-red-50 p-3 rounded-xl border border-slate-200 shadow-sm w-full box-border flex flex-col gap-1">
+      <div className="p-3 rounded-xl border border-emerald-200/60 bg-gradient-to-r
+      from-teal-200 via-purple-100 to-pink-200 shadow-sm  
+      shadow-violet-200 w-full flex flex-col gap-1">
         <div className="text-center w-full">
           <h3 className="text-[16px] font-black text-slate-900 uppercase">AKIJ FLOUR MILLS LTD.</h3>
           <p className="text-[14px] font-bold text-[#D91656] uppercase mt-0.5">SUMMARY IMS REPORT</p>
@@ -173,7 +175,8 @@ export const SummaryImsReport = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[350px] w-full box-border">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 
+      min-h-[420px] w-full box-border">
         {showSpinner && <RGBSpinner />}
         
         {!showSpinner && ( !showReport || reportData.length === 0 ) && (
@@ -187,12 +190,12 @@ export const SummaryImsReport = () => {
           <div className="w-full overflow-auto max-h-[420px]">
             <table id="summary-ims-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
-                <tr className="text-[10px] font-bold uppercase text-slate-900 whitespace-nowrap">
-                  <th className="p-1 px-2 bg-[#D4F6FF]">Territory</th>
-                  <th className="p-1 px-2 bg-[#D4F6FF]">Distributor</th>
-                  <th className="p-1 px-2 bg-[#D4F6FF]">SO Enrol</th>
-                  <th className="p-1 px-2 bg-[#D4F6FF]">SO Name</th>
-                  <th className="p-1 px-2 bg-[#D4F6FF]">Joining Date</th>
+                <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
+                  <th className="p-1 px-2 table-header">Territory</th>
+                  <th className="p-1 px-2 table-header">Distributor</th>
+                  <th className="p-1 px-2 table-header">SO Enrol</th>
+                  <th className="p-1 px-2 table-header">SO Name</th>
+                  <th className="p-1 px-2 table-header">Joining Date</th>
                   {Object.keys(reportData[0]?.daysData || {}).map((dayCol, idx) => (
                     <th key={idx} className="p-1 px-2 text-center bg-[#FFD09B]">{dayCol}</th>
                   ))}
@@ -212,7 +215,7 @@ export const SummaryImsReport = () => {
                         {row.daysData?.[dayCol] !== undefined ? formatDecimal(row.daysData[dayCol]) : 0}
                       </td>
                     ))} 
-                    <td className="py-0 px-2 border border-slate-200 text-right bg-[#dbffcb]">{formatDecimal(row.grandTotal)}</td>
+                    <td className="py-0 px-2 border border-slate-200 text-right bg-[#dbffcb] text-indigo-900">{formatDecimal(row.grandTotal)}</td>
                   </tr>
                 ))}
               </tbody>

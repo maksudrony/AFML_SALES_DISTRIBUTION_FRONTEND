@@ -32,8 +32,8 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
     <div className="w-full h-[100dvh] flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
       
       {/* Navbar Area */}
-      <nav className="w-full h-12 bg-gradient-to-r from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC]
-      backdrop-blur-xl border border-white/10 shadow-2xl text-white flex items-center justify-between px-3 sm:px-4 z-50 shrink-0">
+      <nav className="w-full h-12 navbar-color  
+      border border-white/10 shadow-2xl text-white flex items-center justify-between px-3 sm:px-4 z-50 shrink-0">
         
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button 
@@ -150,16 +150,21 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         
         {/* Sidebar Layer */}
         <aside 
-          className={`h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none border-r border-slate-900
-            absolute md:relative top-0 bottom-0 left-0
+          className={`
+            h-full flex flex-col p-2 shadow-2xl transition-all duration-300 ease-in-out z-40 select-none 
+            border-r border-white 
+            sidebar-menu-color
+            absolute md:relative top-0 bottom-0 left-0 pointer-events-auto
             ${isSidebarOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full md:translate-x-0 md:w-[60px]'}
           `}
-          style={{ backgroundColor: '#313647' }}
+          // style={{ backgroundColor: '#313647' }}
           onMouseEnter={() => window.innerWidth > 768 && dispatch(setSidebarOpen(true))}
-          onMouseLeave={() => {
+          onMouseLeave={(e) => {
             if (window.innerWidth > 768) {
               dispatch(setSidebarOpen(false));
               dispatch(toggleMenuIndex(-1));
+            } else {
+              e.preventDefault();
             }
           }}
         >
@@ -180,7 +185,8 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
             ))}
           </div>
           
-          <div className="text-[9px] font-mono text-white-500 text-center pt-2 border-t border-slate-800/60 whitespace-nowrap overflow-hidden shrink-0">
+          <div className="text-[9px] font-mono text-white text-center pt-2 border-t border-white whitespace-nowrap 
+          overflow-hidden shrink-0">
             {isSidebarOpen ? 'Release 1.0' : 'v1'}
           </div>
         </aside>
@@ -188,7 +194,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         {/* Mobile Sidebar Backdrop Layer */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+            className="fixed inset-0 bg-black/10 z-30 md:hidden"
             onClick={() => dispatch(setSidebarOpen(false))}
           />
         )}

@@ -18,7 +18,7 @@ export const CommonDateRange = ({
     {/* <div className="flex flex-row items-center gap-2 w-full sm:w-auto"> */}
       {/* From Date */}
       <div className="w-full flex flex-col">
-        <label htmlFor="common-from-date" className="text-[10px] font-bold text-slate-500 uppercase truncate">
+        <label htmlFor="common-from-date" className="text-[10px] font-bold text-slate-700 uppercase truncate">
           From Date
         </label>
         <input 
@@ -33,7 +33,7 @@ export const CommonDateRange = ({
 
       {/* To Date */}
       <div className="w-full flex flex-col">
-        <label htmlFor="common-to-date" className="text-[10px] font-bold text-slate-500 uppercase truncate">
+        <label htmlFor="common-to-date" className="text-[10px] font-bold text-slate-700 uppercase truncate">
           To Date
         </label>
         <input 

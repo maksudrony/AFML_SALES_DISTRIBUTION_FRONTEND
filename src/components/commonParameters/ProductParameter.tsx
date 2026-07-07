@@ -26,7 +26,7 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
 
   return (
     <div className="w-full flex flex-col">
-      <label className="text-[10px] font-bold text-slate-500 uppercase truncate">
+      <label className="text-[10px] font-bold text-slate-700 uppercase truncate">
         Product
       </label>
       

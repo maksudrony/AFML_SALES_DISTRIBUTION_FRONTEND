@@ -21,7 +21,7 @@ export const DivisionSelect = ({ userId, zoneId, value, onChange, onError }: Div
 
   return (
     <div className="w-full flex flex-col">
-      <label htmlFor="division-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Division</label>
+      <label htmlFor="division-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Division</label>
       <select 
         id="division-select" 
         title="Select Division" 

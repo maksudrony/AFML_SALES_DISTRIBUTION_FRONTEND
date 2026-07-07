@@ -5,6 +5,15 @@
    ========================================== */
 
 /* 🚀 Global Show Report Button Style */
+.sidebar-menu-color { 
+  /* @apply bg-gradient-to-b from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC]; */
+  @apply bg-slate-500;
+}
+
+.navbar-color {
+  @apply bg-gradient-to-r from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC] backdrop-blur-xl;
+}
+
 .show-report {
     background-color: #E90074 !important;
     border-radius: 8px !important;
@@ -24,8 +33,13 @@
 
 /* 🚀 Global Table Header Style */
 .table-header {
-    background-color: #D4F6FF !important;
-    color: #0f172a !important; /* Slate-900 for high-contrast dark text on light blue bg */
+    @apply bg-cyan-100 text-slate-900 font-bold; /* Class inline list er baire */
+}
+
+.report-parameter-box {
+  @apply border border-emerald-200/50 bg-gradient-to-r
+      from-teal-200 via-purple-100 to-pink-200 shadow-sm  
+      shadow-violet-200;
 }
 
 /* 🚀 Global Table Data Rows Base Style */

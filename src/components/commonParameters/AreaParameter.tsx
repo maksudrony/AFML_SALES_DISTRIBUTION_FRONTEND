@@ -21,7 +21,7 @@ export const AreaSelect = ({ userId, divisionId, value, onChange, onError }: Are
 
   return (
     <div className="w-full flex flex-col">
-      <label htmlFor="area-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Area</label>
+      <label htmlFor="area-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Area</label>
       <select 
         id="area-select" 
         title="Select Area" 

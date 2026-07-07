@@ -21,7 +21,7 @@ export const ZoneSelect = ({ userId, channelId, value, onChange, onError }: Zone
 
   return (
     <div className="w-full flex flex-col">
-      <label htmlFor="zone-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Zone</label>
+      <label htmlFor="zone-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Zone</label>
       <select 
         id="zone-select" 
         title="Select Zone" 

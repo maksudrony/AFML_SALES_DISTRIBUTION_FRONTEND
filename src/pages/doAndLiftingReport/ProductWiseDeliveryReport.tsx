@@ -26,7 +26,7 @@ export const ProductWiseDeliveryReport = () => {
 
 
   const formatDecimal = (num: number | undefined | null): string => {
-    if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
+    if (!num || isNaN(Number(num))) return '';
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
@@ -70,13 +70,13 @@ export const ProductWiseDeliveryReport = () => {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-orange-200 to-red-50 p-3 rounded-xl border border-slate-200 shadow-sm w-full box-border flex flex-col gap-1">
+      <div className="report-parameter-box p-3 rounded-xl shadow-sm w-full flex flex-col gap-1">
         <div className="text-center w-full">
           <h3 className="text-[16px] font-black text-slate-900 uppercase">AKIJ FLOUR MILLS LTD.</h3>
           <p className="text-[14px] font-bold text-[#D91656] uppercase mt-0.5">PRODUCT WISE DELIVERY REPORT</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-3 w-full lg:w-[70%] mx-auto relative z-[99]">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-3 w-full lg:w-[70%] mx-auto ">
           <CommonDateRange
             fromDate={fromDate}
             toDate={toDate}
@@ -93,7 +93,8 @@ export const ProductWiseDeliveryReport = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-[300px] w-full box-border">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 
+      max-h-[420px] w-full box-border">
         {showSpinner && <RGBSpinner />}
         
         {!showSpinner && ( !showReport || reportData.length === 0 ) && (
@@ -107,19 +108,19 @@ export const ProductWiseDeliveryReport = () => {
           <div className="w-full overflow-auto max-h-[420px]">
             <table id="delivery-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
-                <tr className="text-[10px] font-bold uppercase text-slate-900 whitespace-nowrap">
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Product Code</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Product Name</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Delivery (Bag)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Delivery (Ton)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Delivery (Value)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Rate Per Bag</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Rate Per MT</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Return (Bag)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Return (Value)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Return (Ton)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Net Delivery (Bag)</th>
-                  <th className="p-1 px-2 bg-[#C9EEFF]">Net Delivery (Value)</th>
+                <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
+                  <th className="p-1 px-2 table-header">Product Code</th>
+                  <th className="p-1 px-2 table-header">Product Name</th>
+                  <th className="p-1 px-2 table-header">Delivery (Bag)</th>
+                  <th className="p-1 px-2 table-header">Delivery (Ton)</th>
+                  <th className="p-1 px-2 table-header">Delivery (Value)</th>
+                  <th className="p-1 px-2 table-header">Rate Per Bag</th>
+                  <th className="p-1 px-2 table-header">Rate Per MT</th>
+                  <th className="p-1 px-2 table-header">Return (Bag)</th>
+                  <th className="p-1 px-2 table-header">Return (Value)</th>
+                  <th className="p-1 px-2 table-header">Return (Ton)</th>
+                  <th className="p-1 px-2 table-header">Net Delivery (Bag)</th>
+                  <th className="p-1 px-2 table-header">Net Delivery (Value)</th>
                 </tr>
               </thead> 
               <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 text-end">

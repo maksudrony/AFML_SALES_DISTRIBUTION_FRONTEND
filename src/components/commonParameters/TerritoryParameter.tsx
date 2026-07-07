@@ -21,7 +21,7 @@ export const TerritorySelect = ({ userId, areaId, value, onChange, onError }: Te
 
   return (
     <div className="w-full flex flex-col">
-      <label htmlFor="territory-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Territory</label>
+      <label htmlFor="territory-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Territory</label>
       <select 
         id="territory-select" 
         title="Select Territory" 

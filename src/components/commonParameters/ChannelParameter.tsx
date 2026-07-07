@@ -22,7 +22,7 @@ export const ChannelSelect = ({ userId, value, onChange, onError, onlyConsumer =
 
   return (
     <div className="w-full flex flex-col">
-      <label htmlFor="channel-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">Channel</label>
+      <label htmlFor="channel-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Channel</label>
       <select 
         id="channel-select" 
         title="Select Channel" 

@@ -18,7 +18,7 @@ export const ProductCategorySelect = ({ value, onChange, onError }: ProductCateg
 
   return (
     <div className="flex-1 w-full flex flex-col">
-      <label htmlFor="product-category-select" className="text-[10px] font-bold text-slate-500 uppercase truncate">
+      <label htmlFor="product-category-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">
         Product Category
       </label>
       
