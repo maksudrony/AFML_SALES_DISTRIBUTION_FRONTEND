@@ -61,7 +61,8 @@ export const baseApi = createApi({
     'ProductWiseDeliveryReport', 
     'SummaryImsReport',
     'SalesChannelType',
-    'QuantityType'
+    'QuantityType',
+    'ReportType',
   ], 
   endpoints: () => ({}),
 });

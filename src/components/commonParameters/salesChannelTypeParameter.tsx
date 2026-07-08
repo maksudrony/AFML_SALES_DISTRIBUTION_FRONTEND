@@ -16,7 +16,7 @@ export const SalesChannelTypeSelect = ({ userId, value, onChange, onError }: Sal
 
   useEffect(() => {
     if (error) { 
-        onError("Opps! Failed to connect with server");
+        onError("Opps! Failed to load Sales Channel Types");
     }
   }, [error, onError]);
 

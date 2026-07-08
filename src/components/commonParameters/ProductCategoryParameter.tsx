@@ -3,7 +3,7 @@ import { useGetProductCategoriesQuery } from '../../services/productCategoryApi'
 
 interface ProductCategorySelectProps {
   value: string | number;
-  onChange: (value: any) => void;
+  onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
 }
 
