@@ -1,6 +1,5 @@
 import { baseApi } from './api';
 
-// এন্টারপ্রাইজ রিকোয়েস্ট প্যারামিটার ইন্টারফেস ডিফাইন
 export interface ISummaryImsReportParams {
   fromDate: string;
   toDate: string;

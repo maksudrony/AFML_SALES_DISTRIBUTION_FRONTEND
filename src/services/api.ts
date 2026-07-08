@@ -59,7 +59,9 @@ export const baseApi = createApi({
     'Areas',
     'Territories',
     'ProductWiseDeliveryReport', 
-    'SummaryImsReport'
+    'SummaryImsReport',
+    'SalesChannelType',
+    'QuantityType'
   ], 
   endpoints: () => ({}),
 });

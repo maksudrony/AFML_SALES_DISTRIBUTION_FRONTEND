@@ -7,7 +7,8 @@
 /* 🚀 Global Show Report Button Style */
 .sidebar-menu-color { 
   /* @apply bg-gradient-to-b from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC]; */
-  @apply bg-slate-500;
+  /* @apply bg-slate-500; */
+  background-color: #474A56;
 }
 
 .navbar-color {
