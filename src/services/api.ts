@@ -63,6 +63,7 @@ export const baseApi = createApi({
     'SalesChannelType',
     'QuantityType',
     'ReportType',
+    'LiftingAndDoReport'
   ], 
   endpoints: () => ({}),
 });

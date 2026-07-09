@@ -5,9 +5,10 @@ interface ReportTypeSelectProps {
   value:  number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
+  excludeValues?: number[];
 }
 
-export const ReportTypeSelect = ({ value, onChange, onError }: ReportTypeSelectProps) => {
+export const ReportTypeSelect = ({ value, onChange, onError, excludeValues =[] }: ReportTypeSelectProps) => {
   const { data: ReportTypes = [], error } = useGetReportTypeQuery();
 
   useEffect(() => {
@@ -15,6 +16,10 @@ export const ReportTypeSelect = ({ value, onChange, onError }: ReportTypeSelectP
       onError("Failed to load Report Types");
     }
   }, [error, onError]);
+
+  const filteredReportTypes = ReportTypes.filter(
+    (item) => !excludeValues.includes(item.id)
+  );
 
   return (
     <div className="flex-1 w-full flex flex-col">
@@ -34,7 +39,8 @@ export const ReportTypeSelect = ({ value, onChange, onError }: ReportTypeSelectP
         h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate box-border"
       >
         <option value="">-- All Types --</option>
-        {ReportTypes.map((item) => (
+        
+        {filteredReportTypes.map((item) => (
           <option key={item.id} value={item.id}>{item.name}</option>
         ))}
       </select>

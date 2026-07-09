@@ -72,8 +72,8 @@ export const ProductWiseDeliveryReport = () => {
 
       <div className="report-parameter-box p-3 rounded-xl shadow-sm w-full flex flex-col gap-1">
         <div className="text-center w-full">
-          <h3 className="text-[16px] font-black text-slate-900 uppercase">AKIJ FLOUR MILLS LTD.</h3>
-          <p className="text-[14px] font-bold text-[#D91656] uppercase mt-0.5">PRODUCT WISE DELIVERY REPORT</p>
+          <h3 className="page-main-header">AKIJ FLOUR MILLS LTD.</h3>
+          <p className="page-sub-header">PRODUCT WISE DELIVERY REPORT</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-3 w-full lg:w-[70%] mx-auto ">
@@ -94,7 +94,7 @@ export const ProductWiseDeliveryReport = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 
-      max-h-[420px] w-full box-border">
+      max-h-[425px] w-full box-border">
         {showSpinner && <RGBSpinner />}
         
         {!showSpinner && ( !showReport || reportData.length === 0 ) && (
@@ -109,25 +109,35 @@ export const ProductWiseDeliveryReport = () => {
             <table id="delivery-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
                 <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
-                  <th className="p-1 px-2 table-header">Product Code</th>
-                  <th className="p-1 px-2 table-header">Product Name</th>
-                  <th className="p-1 px-2 table-header">Delivery (Bag)</th>
-                  <th className="p-1 px-2 table-header">Delivery (Ton)</th>
-                  <th className="p-1 px-2 table-header">Delivery (Value)</th>
-                  <th className="p-1 px-2 table-header">Rate Per Bag</th>
-                  <th className="p-1 px-2 table-header">Rate Per MT</th>
-                  <th className="p-1 px-2 table-header">Return (Bag)</th>
-                  <th className="p-1 px-2 table-header">Return (Value)</th>
-                  <th className="p-1 px-2 table-header">Return (Ton)</th>
-                  <th className="p-1 px-2 table-header">Net Delivery (Bag)</th>
-                  <th className="p-1 px-2 table-header">Net Delivery (Value)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Product Code</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Product Name</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Delivery (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Delivery (Ton)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Delivery (Value)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Rate Per Bag</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Rate Per MT</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Return (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Return (Value)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Return (Ton)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Net Delivery (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Net Delivery (Value)</th>
                 </tr>
               </thead> 
-              <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 text-end">
+              <tbody className="text-[11px] divide-y divide-slate-200 text-end">
                 {reportData.map((row, index) => {
-                  const isGrandTotal = row.prodCode === 'Grand-Total';
+                  const isGrandTotal = row.prodCode === 'Grand Total';
+                  // const isSubTotal = row.prodCode.includes('Total');
+
+                  let rowTotalClass = "table-data";
+
+                  if (isGrandTotal) {
+                    rowTotalClass = "bg-grand-total";
+                  } 
+                  // else if (isSubTotal) {
+                  //   rowTotalClass = "bg-sub-total";
+                  // }
                   return (
-                    <tr key={index} className={isGrandTotal ? "bg-[#DB005B] text-white font-bold" : "table-data"}>
+                    <tr key={index} className={rowTotalClass}>
                       <td className={`py-0 px-2 border border-slate-200 ${isGrandTotal ? 'bg-transparent text-white' : 'bg-[#ffd6ba] text-slate-600'}`}>{row.prodCode}</td>
                       <td className={`py-0 px-2 border border-slate-200 text-left min-w-[350px] max-w-[500px] whitespace-normal text-[12px] ${isGrandTotal ? 'bg-transparent text-white' : 'bg-[#dbffcb] text-slate-700'}`}>{row.prodName}</td>
                       <td className="py-0 px-2 border border-slate-200">{formatDecimal(row.bagDelQty)}</td>

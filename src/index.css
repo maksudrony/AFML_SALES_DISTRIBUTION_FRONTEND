@@ -15,6 +15,24 @@
   @apply bg-gradient-to-r from-[#00E5FF] via-[#7C3AED] to-[#FF3CAC] backdrop-blur-xl;
 }
 
+.bg-grand-total { 
+  @apply bg-[#DB005B] text-white font-bold text-[13px]
+}
+
+.bg-sub-total { 
+  @apply bg-[#FFC193] text-pink-800 font-bold text-[13px]
+}
+
+.bg-grand-total:hover {
+    background-color: #1B9C85 !important;
+    color: white !important;
+}
+
+.bg-sub-total:hover {
+    background-color: #1B9C85 !important;
+    color: white !important;
+}
+
 .show-report {
     background-color: #E90074 !important;
     border-radius: 8px !important;
@@ -32,9 +50,12 @@
     cursor: not-allowed;
 }
 
-/* 🚀 Global Table Header Style */
-.table-header {
-    @apply bg-cyan-100 text-slate-900 font-bold; /* Class inline list er baire */
+.page-main-header {
+  @apply text-[15px] font-extrabold text-slate-700 uppercase
+}
+
+.page-sub-header {
+  @apply text-[13px] font-bold text-rose-600 uppercase mt-0
 }
 
 .report-parameter-box {
@@ -43,11 +64,17 @@
       shadow-violet-200;
 }
 
+/* 🚀 Global Table Header Style */
+.table-header {
+    @apply bg-cyan-100 text-slate-900 font-bold; /* Class inline list er baire */
+}
+
 /* 🚀 Global Table Data Rows Base Style */
 .table-data {
     /* color: black !important; */
-    font-weight: bold !important;
-    transition: background-color 0.15s ease;
+    /* font-weight: bold !important; */
+    @apply text-slate-800 font-semibold;
+    /* transition: background-color 0.15s ease; */
 }
 
 /* 🚀 Global Table Data Row Hover State Trigger */
@@ -97,9 +124,6 @@
   animation: rgbBorderMove 3s linear infinite !important;
 }
 thead th {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   box-shadow: inset 0 0 0 1px #cbd5e1;
 }
 

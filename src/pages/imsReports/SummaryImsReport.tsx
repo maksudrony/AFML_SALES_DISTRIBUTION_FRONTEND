@@ -112,8 +112,8 @@ export const SummaryImsReport = () => {
       from-teal-200 via-purple-100 to-pink-200 shadow-sm  
       shadow-violet-200 w-full flex flex-col gap-1">
         <div className="text-center w-full">
-          <h3 className="text-[16px] font-black text-slate-900 uppercase">AKIJ FLOUR MILLS LTD.</h3>
-          <p className="text-[14px] font-bold text-[#D91656] uppercase mt-0.5">SUMMARY IMS REPORT</p>
+          <h3 className="page-main-header">AKIJ FLOUR MILLS LTD.</h3>
+          <p className="page-sub-header">SUMMARY IMS REPORT</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-10 items-end gap-1.5 w-full bg-transparent">
@@ -191,18 +191,18 @@ export const SummaryImsReport = () => {
             <table id="summary-ims-report-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
                 <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
-                  <th className="p-1 px-2 table-header">Territory</th>
-                  <th className="p-1 px-2 table-header">Distributor</th>
-                  <th className="p-1 px-2 table-header">SO Enrol</th>
-                  <th className="p-1 px-2 table-header">SO Name</th>
-                  <th className="p-1 px-2 table-header">Joining Date</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Territory</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Distributor</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">SO Enrol</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">SO Name</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Joining Date</th>
                   {Object.keys(reportData[0]?.daysData || {}).map((dayCol, idx) => (
-                    <th key={idx} className="p-1 px-2 text-center bg-[#FFD09B]">{dayCol}</th>
+                    <th key={idx} className="p-1 px-2 text-center bg-[#FFD09B] sticky top-0 z-30">{dayCol}</th>
                   ))}
-                  <th className="p-1 px-2 text-center bg-[#FFD09B]">Grand Total</th>
+                  <th className="p-1 px-2 text-center bg-[#FFD09B] sticky top-0 z-30">Grand Total</th>
                 </tr>
               </thead>
-              <tbody className="text-[11px] font-medium text-slate-700 divide-y divide-slate-200 whitespace-nowrap">
+              <tbody className="text-[11px] divide-y divide-slate-200 whitespace-nowrap">
                 {reportData.map((row: IImsReportRow, index: number) => (
                   <tr key={index} className="table-data">
                     <td className="py-0 px-2 border border-slate-200 font-bold bg-[#fff6b3]">{row.territoryName}</td>
