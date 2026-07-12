@@ -8,14 +8,14 @@ import { PdfPrintButton } from '../../components/commonParameters/PdfPrintButton
 import { RGBSpinner } from '../../components/RGBSpinner';
 import { Search } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { useLazyGetLiftingAndDoReportQuery } from '../../services/doAndLiftingReportService/liftingAndDoReportApi';
+import { useLazyGetAverageRateRptQuery } from '../../services/doAndLiftingReportService/AverageRateRptApi';
 import { SalesChannelTypeSelect } from '../../components/commonParameters/SalesChannelTypeParameter';
 import { ChannelSelect } from '../../components/commonParameters/ChannelParameter';
 import { QuantityTypeSelect } from '../../components/commonParameters/QuantityTypeParameter';
 import { ReportTypeSelect } from '../../components/commonParameters/ReportTypeParameter';
 
 
-export const LiftingAndDoReport = () => {
+export const AverageRateRpt = () => {
   
   const user = useAppSelector((state) => state.auth.user);
   const userId = user?.empEnroll || '';
@@ -62,10 +62,12 @@ export const LiftingAndDoReport = () => {
 
   const [isLocalLoading, setIsLocalLoading] = useState<boolean>(false);
 
-  const [triggerReport, { data: reportResponse, isFetching }] = useLazyGetLiftingAndDoReportQuery();
+  const [triggerReport, { data: reportResponse, isFetching }] = useLazyGetAverageRateRptQuery();
 
   const reportHeader = reportResponse?.reportHeader;
   const reportData = reportResponse?.reportRows ?? [];
+
+  const showDailyColumns = selectedReportType !== 4;
 
   // Count the number of rows for each channel name
   const TableChannelCount: Record<string, number> = {};
@@ -80,11 +82,6 @@ export const LiftingAndDoReport = () => {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
-  const getPrintDateTime = (): string => {
-    const now = new Date();
-    const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-    return `${String(now.getDate()).padStart(2, '0')}-${months[now.getMonth()]}-${now.getFullYear()} ${String(now.getHours() % 12 || 12).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
-  };
 
   const handleShowReport = async () => {
 
@@ -127,7 +124,7 @@ export const LiftingAndDoReport = () => {
       }, false).unwrap();
       
       if (res) {
-        // console.log(res);
+        //console.log(res);
         setShowReport(true);
       }
     } catch (err) {
@@ -185,13 +182,13 @@ export const LiftingAndDoReport = () => {
             value={selectedQuantityType} 
             onChange={(val) => { setSelectedQuantityType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[]}
+            excludeValues={[3, 4]}
           />
           <ReportTypeSelect 
             value={selectedReportType} 
             onChange={(val) => { setSelectedReportType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[3, 4]}
+            excludeValues={[3]}
           />
           <ShowReportButton 
             onClick={handleShowReport} 
@@ -206,9 +203,9 @@ export const LiftingAndDoReport = () => {
             onError={setErrorBanner} 
           />*/}
           <ExcelDownloadButtonV2 
-            tableId="lifting-and-do-report-table" 
-            reportTitle="Lifting and DO Report" 
-            fileName="Lifting and DO Report" 
+            tableId="average-rate-rpt-table" 
+            reportTitle="Average Rate Report" 
+            fileName="Average Rate Report" 
             hasData={showReport && reportData.length > 0} 
             generatedBy={empName}
             companyName="AKIJ FLOUR MILLS LTD."
@@ -248,7 +245,7 @@ export const LiftingAndDoReport = () => {
 
         <div className="print-only-preview-header text-center mb-4 hidden print:block">
           <h2 className="page-main-header">AKIJ FLOUR MILLS LTD.</h2>
-          <h3 className="page-sub-header">LIFTING AND DO REPORT</h3>
+          <h3 className="page-sub-header">AVERAGE RATE REPORT</h3>
         </div>
 
         {showSpinner && <RGBSpinner />} 
@@ -263,7 +260,7 @@ export const LiftingAndDoReport = () => {
         {!showSpinner && showReport && reportData.length > 0 && (
           <div className="w-full overflow-auto max-h-[420px]">
 
-            <table id="lifting-and-do-report-table" className="w-full text-left border-separate 
+            <table id="average-rate-rpt-table" className="w-full text-left border-separate 
             border-spacing-0">
               <thead>
                 <tr className="h-6 text-[10px] font-bold uppercase whitespace-nowrap">
@@ -281,27 +278,28 @@ export const LiftingAndDoReport = () => {
                     Product Name
                   </th>
 
-                  <th colSpan={5} className="p-0 px-2 bg-teal-200 text-slate-900 font-bold text-center sticky top-0 z-30">
+                  <th colSpan={3} className="p-0 px-2 bg-teal-200 text-slate-900 font-bold text-center sticky top-0 z-30">
                     {reportHeader?.monthlyDateRange}
                   </th>
-
-                  <th colSpan={5} className="p-0 px-2 bg-emerald-200 text-slate-900 font-bold text-center sticky top-0 z-30">
+									{showDailyColumns && (
+                  <th colSpan={3} className="p-0 px-2 bg-emerald-200 text-slate-900 font-bold text-center sticky top-0 z-30">
                     {reportHeader?.dailyDateRange}
                   </th>
+									)}
                 </tr>
                 <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
-                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Consumer</th>
-                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Bulk</th>  
-                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Corporate</th>
-                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Commodity Trading</th>
-                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Monthly Total</th>
-
-                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Consumer</th>
-                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Bulk</th>
-                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Corporate</th>
-                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Commodity Trading</th>
-                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Daily Total</th>
-                </tr>
+                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Product Weight</th>
+                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Amount</th>  
+                  <th className="p-0 px-2 bg-purple-100 text-slate-900 font-bold sticky top-6 z-20">Average Rate</th>
+									
+									{showDailyColumns && (
+									<>
+                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Product Weight</th>
+                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Amount</th>
+                  <th className="p-0 px-2 bg-fuchsia-200 text-slate-900 font-bold sticky top-6 z-20">Average Rate</th>
+									</>
+									)}
+									</tr>
               </thead> 
               
               <tbody className="text-[11px] divide-y divide-slate-200 text-end">
@@ -339,54 +337,39 @@ export const LiftingAndDoReport = () => {
                       ${isGrandTotal ? 'bg-green-200 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-yellow-100 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.monthlyConsumer)}</td>
+                      >{formatDecimal(row.monQty)}</td>
                       <td className={`py-0 px-2 border border-slate-200 
                       ${isGrandTotal ? 'bg-green-200 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-yellow-100 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.monthlyBulk)}</td>
+                      >{formatDecimal(row.monValue)}</td>
                       <td className={`py-0 px-2 border border-slate-200
                       ${isGrandTotal ? 'bg-green-200 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-yellow-100 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.monthlyCorporate)}</td>
-                      <td className={`py-0 px-2 border border-slate-200
-                      ${isGrandTotal ? 'bg-green-200 text-rose-900 text-[13px]'
-                        : isSubTotal ? 'bg-yellow-100 text-pink-800 text-[13px]' : 'bg-transparent'}
-                      `}
-                      >{formatDecimal(row.monthlyCommodityTrading)}</td>
-                      <td className={`py-0 px-2 border border-slate-200
-                      ${isGrandTotal ? 'bg-green-200 text-rose-900 text-[13px]'
-                        : isSubTotal ? 'bg-yellow-100 text-pink-800 text-[13px]' : 'bg-transparent'}
-                      `}
-                      >{formatDecimal(row.monthlyTotal)}</td>
+                      >{formatDecimal(row.monAvgRate)}</td>
 
 
+											{showDailyColumns && (
+											<>
                       <td className={`py-0 px-2 border border-slate-200
                       ${isGrandTotal ? 'bg-emerald-300 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-orange-200 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.dailyConsumer)}</td>
+                      >{formatDecimal(row.dayQty)}</td>
                       <td className={`py-0 px-2 border border-slate-200
                       ${isGrandTotal ? 'bg-emerald-300 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-orange-200 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.dailyBulk)}</td>
+                      >{formatDecimal(row.dayValue)}</td>
                       <td className={`py-0 px-2 border border-slate-200
                       ${isGrandTotal ? 'bg-emerald-300 text-rose-900 text-[13px]'
                         : isSubTotal ? 'bg-orange-200 text-pink-800 text-[13px]' : 'bg-transparent'}
                       `}
-                      >{formatDecimal(row.dailyCorporate)}</td>
-                      <td className={`py-0 px-2 border border-slate-200
-                      ${isGrandTotal ? 'bg-emerald-300 text-rose-900 text-[13px]'
-                        : isSubTotal ? 'bg-orange-200 text-pink-800 text-[13px]' : 'bg-transparent'}
-                      `}
-                      >{formatDecimal(row.dailyCommodityTrading)}</td>
-                      <td className={`py-0 px-2 border border-slate-200
-                      ${isGrandTotal ? 'bg-emerald-300 text-rose-900 text-[13px]'
-                        : isSubTotal ? 'bg-orange-200 text-pink-800 text-[13px]' : 'bg-transparent'}
-                      `}
-                      >{formatDecimal(row.dailyTotal)}</td>
+                      >{formatDecimal(row.dayAvgRate)}</td>
+											</>
+											)}
+
                     </tr>
                   );
                 })}
