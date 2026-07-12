@@ -136,7 +136,7 @@ html, body, #root {
   min-height: 100vh !important;
   max-width: 100vw !important;
   max-height: 100vh !important;
-  overflow: hidden !important; /* মেইন উইন্ডোর কুৎসিত স্ক্রলবার চিরতরে অফ */
+  overflow: hidden !important;
   background-color: #f8fafc;
   box-sizing: border-box;
 }
@@ -228,4 +228,96 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.print-only-preview-header {
+  display: none !important;
+}
+
+/* --- FOR PRINT PDF --- */
+@media print {
+  @page {
+    size: A4 var(--print-orientation);
+    margin: 8mm 6mm 8mm 6mm;
+  }
+
+  .print-only-preview-header {
+    display: block !important;
+
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  html, body, #root, main{
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  div:has(> .printable-report-area) {
+    display: contents !important;
+  }
+
+  /* screen er main interface r button hide */
+  body * {
+    visibility: hidden;
+  }
+
+  /* shudhu main area visible */
+  .printable-report-area,
+  .printable-report-area * {
+    visibility: visible;
+  }
+
+  .printable-report-area {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important; 
+    background: white !important;
+    zoom: 70%; 
+    transform-origin: top left;
+    border: none !important;         
+    box-shadow: none !important;     
+    border-radius: 0px !important;
+
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .printable-report-area .table-scroll-container,
+  .printable-report-area div[class*="max-h-"],
+  .printable-report-area div[class*="overflow-"] {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  .printable-report-area table {
+    width: 100% !important;
+    page-break-inside: auto !important;
+
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  .printable-report-area tr {
+    page-break-inside: avoid !important;
+  }
+
+  .printable-report-area thead {
+    display: table-header-group !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

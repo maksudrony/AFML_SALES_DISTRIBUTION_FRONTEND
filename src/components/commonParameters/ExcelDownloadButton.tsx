@@ -141,7 +141,7 @@ export const ExcelDownloadButton = ({
         shadow-sm cursor-pointer transition-colors whitespace-nowrap !flex-nowrap text-ellipsis 
         overflow-hidden"
       >
-        <span className="flex-shrink-0">EXCEL DOWNLOAD</span> 
+        <span className="flex-shrink-0">EXCEL</span> 
         <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
       </button> 
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, User, ChevronDown, X, LogOut, CircleUserRound } from 'lucide-react'; // X আইকনটি যোগ করা হয়েছে
+import { Menu, User, ChevronDown, X, LogOut, CircleUserRound } from 'lucide-react'; 
 import { SidebarItem } from '../components/SidebarItem';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
@@ -28,7 +28,6 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
   const [userDropdown, setUserDropdown] = useState(false);
 
   return (
-    // w-screen এর বদলে w-full এবং h-screen এর বদলে h-[100dvh] (Dynamic Viewport Height) ব্যবহার করা হয়েছে
     <div className="w-full h-[100dvh] flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
       
       {/* Navbar Area */}

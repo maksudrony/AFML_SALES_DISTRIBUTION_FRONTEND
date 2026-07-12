@@ -21,6 +21,7 @@
     "react-redux": "^9.3.0",
     "react-router-dom": "^7.17.0",
     "react-select": "^5.10.2",
+    "react-to-print": "^3.3.0",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
