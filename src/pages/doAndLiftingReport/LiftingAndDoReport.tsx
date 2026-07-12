@@ -185,6 +185,7 @@ export const LiftingAndDoReport = () => {
             value={selectedQuantityType} 
             onChange={(val) => { setSelectedQuantityType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
+            excludeValues={[]}
           />
           <ReportTypeSelect 
             value={selectedReportType} 

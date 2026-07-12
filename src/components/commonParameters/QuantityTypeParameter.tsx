@@ -5,9 +5,10 @@ interface QuantityTypeSelectProps {
   value:  number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
+  excludeValues?: number[];
 }
 
-export const QuantityTypeSelect = ({ value, onChange, onError }: QuantityTypeSelectProps) => {
+export const QuantityTypeSelect = ({ value, onChange, onError, excludeValues = [] }: QuantityTypeSelectProps) => {
   const { data: QuantityTypes = [], error } = useGetQuantityTypeQuery();
 
   useEffect(() => {
@@ -15,6 +16,10 @@ export const QuantityTypeSelect = ({ value, onChange, onError }: QuantityTypeSel
       onError("Failed to load Quantity Types");
     }
   }, [error, onError]);
+
+    const filteredReportTypes = QuantityTypes.filter(
+    (item) => !excludeValues.includes(item.id)
+  );
 
   return (
     <div className="flex-1 w-full flex flex-col">
@@ -34,7 +39,7 @@ export const QuantityTypeSelect = ({ value, onChange, onError }: QuantityTypeSel
         h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate box-border"
       >
         <option value="">-- All Types --</option>
-        {QuantityTypes.map((item) => (
+        {filteredReportTypes.map((item) => (
           <option key={item.id} value={item.id}>{item.name}</option>
         ))}
       </select>
