@@ -28,4 +28,4 @@ const uiSlice = createSlice({
 });
 
 export const { setSidebarOpen, toggleMenuIndex, clearUiState } = uiSlice.actions;
-export default uiSlice.reducer;
+export const uiReducer = uiSlice.reducer;

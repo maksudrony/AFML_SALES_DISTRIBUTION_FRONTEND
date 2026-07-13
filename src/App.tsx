@@ -7,6 +7,7 @@ import { useAppDispatch } from './hooks/useAppDispatch';
 import { useAppSelector } from './hooks/useAppSelector';
 import { clearAuthCredentials } from './features/auth/authSlice';
 import { clearUiState } from './features/ui/uiSlice';
+import { clearAllReportFilters } from './features/reportCache/reportFiltersCacheSlice';
 import { baseApi } from './services/api';
 
 interface GuardProps {
@@ -25,9 +26,11 @@ const AppRoutes = () => {
 
   const handleLogoutWorkflow = () => {
     storage.clearAll();
-
+    
+    // Redux State Clear Slice er state clear korar jonno dispatch call kora hocche
     dispatch(clearAuthCredentials());
     dispatch(clearUiState());
+    dispatch(clearAllReportFilters());
     
     //RTK Query Cache Clear
     dispatch(baseApi.util.resetApiState())

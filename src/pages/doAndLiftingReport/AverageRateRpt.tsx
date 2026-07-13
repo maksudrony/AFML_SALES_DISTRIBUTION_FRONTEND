@@ -8,15 +8,24 @@ import { PdfPrintButton } from '../../components/commonParameters/PdfPrintButton
 import { RGBSpinner } from '../../components/RGBSpinner';
 import { Search } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
-import { useLazyGetAverageRateRptQuery } from '../../services/doAndLiftingReportService/AverageRateRptApi';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateReportFilters, ReportKeys } from '../../features/reportCache/reportFiltersCacheSlice';
 import { SalesChannelTypeSelect } from '../../components/commonParameters/SalesChannelTypeParameter';
 import { ChannelSelect } from '../../components/commonParameters/ChannelParameter';
 import { QuantityTypeSelect } from '../../components/commonParameters/QuantityTypeParameter';
 import { ReportTypeSelect } from '../../components/commonParameters/ReportTypeParameter';
+import { useLazyGetAverageRateRptQuery } from '../../services/doAndLiftingReportService/averageRateRptApi';
 
 
 export const AverageRateRpt = () => {
   
+	const dispatch = useAppDispatch();
+
+	//redux store theke cache filter read kora hoise jodi age kono cache thake
+	const cachedFilters = useAppSelector(
+    (state) => state.reportFiltersCache[ReportKeys.AverageRateRpt]
+  );
+
   const user = useAppSelector((state) => state.auth.user);
   const userId = user?.empEnroll || '';
   const empName = user?.empName || '';
@@ -46,16 +55,66 @@ export const AverageRateRpt = () => {
   const defaultFromDate = formatDate(firstDayOfMonth);
   const defaultToDate = formatDate(previousDay);
 
-  const [fromDate, setFromDate] = useState(defaultFromDate);
-  const [toDate, setToDate] = useState(defaultToDate);
+	const [fromDate, setFromDate] = useState(
+		(cachedFilters?.fromDate as string) ?? defaultFromDate
+	);
 
-  const [dayFromDate, setDayFromDate] = useState(defaultToDate);
-  const [dayToDate, setDayToDate] = useState(defaultToDate);
+	const [toDate, setToDate] = useState(
+		(cachedFilters?.toDate as string) ?? defaultToDate
+	);
 
-  const [selectedChannelType, setSelectedChannelType] = useState<number | ''>(0);
-  const [selectedChannel, setSelectedChannel] = useState<number | ''>('');
-  const [selectedQuantityType, setSelectedQuantityType] = useState<number | ''>(1);
-  const [selectedReportType, setSelectedReportType] = useState<number | ''>(1);
+	const [dayFromDate, setDayFromDate] = useState(
+		(cachedFilters?.dayFromDate as string) ?? defaultToDate
+	);
+
+	const [dayToDate, setDayToDate] = useState(
+		(cachedFilters?.dayToDate as string) ?? defaultToDate
+	);
+  
+	const [selectedChannelType, setSelectedChannelType] = useState<number | ''>(
+		(cachedFilters?.selectedChannelType as number | '') ?? 0
+	);
+
+	const [selectedChannel, setSelectedChannel] = useState<number | ''>(
+		(cachedFilters?.selectedChannel as number | '') ?? ''
+	);
+
+	const [selectedQuantityType, setSelectedQuantityType] = useState<number | ''>(
+		(cachedFilters?.selectedQuantityType as number | '') ?? 1
+	);
+
+	const [selectedReportType, setSelectedReportType] = useState<number | ''>(
+		(cachedFilters?.selectedReportType as number | '') ?? 1
+	);
+
+	// Report filter parameter change hole Redux cache automatically update hobe
+	useEffect(() => {
+  dispatch(
+    updateReportFilters({
+      reportKey: ReportKeys.AverageRateRpt,
+      filters: {
+        fromDate,
+        toDate,
+        dayFromDate,
+        dayToDate,
+        selectedChannelType,
+        selectedChannel,
+        selectedQuantityType,
+        selectedReportType,
+      },
+    })
+  );
+	}, [
+		dispatch,
+		fromDate,
+		toDate,
+		dayFromDate,
+		dayToDate,
+		selectedChannelType,
+		selectedChannel,
+		selectedQuantityType,
+		selectedReportType,
+	]);
 
 
   const [showReport, setShowReport] = useState<boolean>(false);
