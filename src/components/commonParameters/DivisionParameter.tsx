@@ -3,17 +3,14 @@ import { useGetDivisionsQuery } from '../../services/divisionParameterApi';
 
 interface DivisionSelectProps {
   userId: string;
-  zoneId: number | '';
+  zoneId: number;
   value: number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
 }
 
 export const DivisionSelect = ({ userId, zoneId, value, onChange, onError }: DivisionSelectProps) => {
-  const { data: divisions = [], error } = useGetDivisionsQuery(
-    { userId, zoneId: Number(zoneId) },
-    { skip: !userId || !zoneId }
-  );
+  const { data: divisions = [], error } = useGetDivisionsQuery({ userId, zoneId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");

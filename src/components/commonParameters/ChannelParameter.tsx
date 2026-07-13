@@ -10,7 +10,7 @@ interface ChannelSelectProps {
 }
 
 export const ChannelSelect = ({ userId, value, onChange, onError,  includeValues = [] }: ChannelSelectProps) => {
-  const { data: rawChannels = [], error } = useGetChannelsQuery(userId, { skip: !userId });
+  const { data: rawChannels = [], error } = useGetChannelsQuery({ userId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");

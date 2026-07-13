@@ -3,17 +3,14 @@ import { useGetAreasQuery } from '../../services/areaParameterApi';
 
 interface AreaSelectProps {
   userId: string;
-  divisionId: number | '';
+  divisionId: number;
   value: number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
 }
 
 export const AreaSelect = ({ userId, divisionId, value, onChange, onError }: AreaSelectProps) => {
-  const { data: areas = [], error } = useGetAreasQuery(
-    { userId, divisionId: Number(divisionId) },
-    { skip: !userId || !divisionId }
-  );
+  const { data: areas = [], error } = useGetAreasQuery({ userId, divisionId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");

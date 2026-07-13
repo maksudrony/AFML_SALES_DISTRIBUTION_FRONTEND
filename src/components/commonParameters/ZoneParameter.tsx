@@ -3,17 +3,14 @@ import { useGetZonesQuery } from '../../services/zoneParameterApi';
 
 interface ZoneSelectProps {
   userId: string;
-  channelId: number | '';
+  channelId: number;
   value: number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
 }
 
 export const ZoneSelect = ({ userId, channelId, value, onChange, onError }: ZoneSelectProps) => {
-  const { data: zones = [], error } = useGetZonesQuery(
-    { userId, channelId: Number(channelId) },
-    { skip: !userId || !channelId }
-  );
+  const { data: zones = [], error } = useGetZonesQuery({ userId, channelId});
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");

@@ -3,17 +3,14 @@ import { useGetTerritoriesQuery } from '../../services/territoryParameterApi';
 
 interface TerritorySelectProps {
   userId: string;
-  areaId: number | '';
+  areaId: number;
   value: number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
 }
 
 export const TerritorySelect = ({ userId, areaId, value, onChange, onError }: TerritorySelectProps) => {
-  const { data: territories = [], error } = useGetTerritoriesQuery(
-    { userId, areaId: Number(areaId) },
-    { skip: !userId || !areaId }
-  );
+  const { data: territories = [], error } = useGetTerritoriesQuery({ userId, areaId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");
