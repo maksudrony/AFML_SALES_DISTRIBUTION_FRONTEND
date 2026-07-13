@@ -5,10 +5,10 @@ interface ReportTypeSelectProps {
   value:  number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
-  excludeValues?: number[];
+  includeValues?: number[];
 }
 
-export const ReportTypeSelect = ({ value, onChange, onError, excludeValues =[] }: ReportTypeSelectProps) => {
+export const ReportTypeSelect = ({ value, onChange, onError, includeValues =[] }: ReportTypeSelectProps) => {
   const { data: ReportTypes = [], error } = useGetReportTypeQuery();
 
   useEffect(() => {
@@ -17,9 +17,9 @@ export const ReportTypeSelect = ({ value, onChange, onError, excludeValues =[] }
     }
   }, [error, onError]);
 
-  const filteredReportTypes = ReportTypes.filter(
-    (item) => !excludeValues.includes(item.id)
-  );
+  const filteredReportTypes =  includeValues.length  
+  ? ReportTypes.filter((item) => includeValues.includes(item.id))
+  : ReportTypes;
 
   return (
     <div className="flex-1 w-full flex flex-col">

@@ -9,6 +9,7 @@ export const salesChannelTypeApi = baseApi.injectEndpoints({
         method: 'GET',
         params: { userId },
       }),
+      keepUnusedDataFor: 60 * 60, //1 Hour
       providesTags: ['SalesChannelType'], 
     }),
   }),

@@ -149,7 +149,7 @@ export const AverageRateRpt = () => {
       <div className="report-parameter-box p-3 rounded-xl shadow-sm w-full flex flex-col gap-1">
         <div className="text-center w-full">
           <h3 className="page-main-header">AKIJ FLOUR MILLS LTD.</h3>
-          <p className="page-sub-header">LIFTING AND DO REPORT</p>
+          <p className="page-sub-header">AVERAGE RATE ON LIFTING REPORT & DO REPORT & PENDING REPORT</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-11 items-end gap-1 w-full bg-transparent ">
@@ -174,21 +174,21 @@ export const AverageRateRpt = () => {
           <ChannelSelect 
             userId={userId} 
             value={selectedChannel} 
-            onlyConsumer={false} 
             onChange={(val) => { setSelectedChannel(val); setShowReport(false); }} 
             onError={setErrorBanner} 
+						includeValues={[]}
           />
           <QuantityTypeSelect 
             value={selectedQuantityType} 
             onChange={(val) => { setSelectedQuantityType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[3, 4]}
+            includeValues={[1, 2]}
           />
           <ReportTypeSelect 
             value={selectedReportType} 
             onChange={(val) => { setSelectedReportType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[3]}
+            includeValues={[1, 2, 4]}
           />
           <ShowReportButton 
             onClick={handleShowReport} 

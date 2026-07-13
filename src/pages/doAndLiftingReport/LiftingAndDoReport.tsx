@@ -177,21 +177,21 @@ export const LiftingAndDoReport = () => {
           <ChannelSelect 
             userId={userId} 
             value={selectedChannel} 
-            onlyConsumer={false} 
             onChange={(val) => { setSelectedChannel(val); setShowReport(false); }} 
             onError={setErrorBanner} 
+            includeValues={[]}
           />
           <QuantityTypeSelect 
             value={selectedQuantityType} 
             onChange={(val) => { setSelectedQuantityType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[]}
+            includeValues={[]}
           />
           <ReportTypeSelect 
             value={selectedReportType} 
             onChange={(val) => { setSelectedReportType(val); setShowReport(false); }} 
             onError={setErrorBanner} 
-            excludeValues={[3, 4]}
+            includeValues={[1, 2]}
           />
           <ShowReportButton 
             onClick={handleShowReport} 

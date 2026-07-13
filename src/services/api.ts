@@ -50,6 +50,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithReauth,
+  //keepUnusedDataFor: 600, // 10 minutes
   tagTypes: [
     'ProductCategory',
     'ProductDetail',

@@ -4,7 +4,11 @@ import type { ICommonParameterDto } from '../types/commonParameters';
 export const productParameterApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProductDetails: builder.query<ICommonParameterDto[], void>({
-      query: () => '/CommonParameters/product-detail',
+      query: () => ({
+        url: '/CommonParameters/product-detail',
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 60 * 60, //1 Hour
       providesTags: ['ProductDetail'],
     }),
   }),

@@ -8,6 +8,7 @@ export const reportTypeApi = baseApi.injectEndpoints({
         url: `/CommonParameters/report-type`,
         method: 'GET',
       }),
+      keepUnusedDataFor: 60 * 60, // 1 hour
       providesTags: ['ReportType'], 
     }),
   }),

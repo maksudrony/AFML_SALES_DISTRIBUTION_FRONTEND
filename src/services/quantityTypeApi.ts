@@ -8,6 +8,7 @@ export const quantityTypeApi = baseApi.injectEndpoints({
         url: `/CommonParameters/quantity-type`,
         method: 'GET',
       }),
+      keepUnusedDataFor: 60 * 60, //1 Hour
       providesTags: ['QuantityType'], 
     }),
   }),

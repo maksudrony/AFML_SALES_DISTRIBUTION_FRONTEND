@@ -4,7 +4,11 @@ import type { ICommonParameterDto } from '../types/commonParameters';
 export const channelParameterApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getChannels: builder.query<ICommonParameterDto[], string>({
-      query: (userId) => `/CommonParameters/channels/${userId}`,
+      query: (userId) => ({
+        url: `/CommonParameters/channels/${userId}`,
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 60 * 60, //1 Hour
       providesTags: ['Channels'],
     }),
   }),

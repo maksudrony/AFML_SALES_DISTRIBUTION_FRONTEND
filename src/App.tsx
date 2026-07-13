@@ -7,6 +7,7 @@ import { useAppDispatch } from './hooks/useAppDispatch';
 import { useAppSelector } from './hooks/useAppSelector';
 import { clearAuthCredentials } from './features/auth/authSlice';
 import { clearUiState } from './features/ui/uiSlice';
+import { baseApi } from './services/api';
 
 interface GuardProps {
   children: React.ReactNode;
@@ -24,8 +25,13 @@ const AppRoutes = () => {
 
   const handleLogoutWorkflow = () => {
     storage.clearAll();
+
     dispatch(clearAuthCredentials());
     dispatch(clearUiState());
+    
+    //RTK Query Cache Clear
+    dispatch(baseApi.util.resetApiState())
+
     navigate('/', { replace: true });
   };
 

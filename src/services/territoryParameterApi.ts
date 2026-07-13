@@ -4,7 +4,11 @@ import type { ICommonParameterDto } from '../types/commonParameters';
 export const territoryParameterApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTerritories: builder.query<ICommonParameterDto[], { userId: string; areaId: number }>({
-      query: ({ userId, areaId }) => `/CommonParameters/territories/${userId}/${areaId}`,
+      query: ({ userId, areaId }) => ({
+        url: `/CommonParameters/territories/${userId}/${areaId}`,
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 60 * 60, //1 Hour
       providesTags: ['Territories'],
     }),
   }),

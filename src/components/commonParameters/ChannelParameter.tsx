@@ -6,19 +6,19 @@ interface ChannelSelectProps {
   value: number | '';
   onChange: (value: number | '') => void;
   onError: (errorMsg: string) => void;
-  onlyConsumer?: boolean;
+  includeValues?: number[];
 }
 
-export const ChannelSelect = ({ userId, value, onChange, onError, onlyConsumer = false }: ChannelSelectProps) => {
+export const ChannelSelect = ({ userId, value, onChange, onError,  includeValues = [] }: ChannelSelectProps) => {
   const { data: rawChannels = [], error } = useGetChannelsQuery(userId, { skip: !userId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");
   }, [error, onError]);
 
-  const channels = onlyConsumer
-    ? rawChannels.filter(c => c.id === 1 || c.name?.toLowerCase() === 'consumer')
-    : rawChannels;
+  const filteredChannels =  includeValues.length  
+  ? rawChannels.filter((item) => includeValues.includes(item.id))
+  : rawChannels;
 
   return (
     <div className="w-full flex flex-col">
@@ -31,7 +31,9 @@ export const ChannelSelect = ({ userId, value, onChange, onError, onlyConsumer =
         className="border border-slate-300 rounded-md px-1 text-[11px] font-semibold w-full h-[30px] 
         focus:outline-none focus:border-blue-500 bg-white truncate box-border cursor-pointer">
         <option value="">--Select--</option>
-        {channels.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        {filteredChannels.map((item) => (
+          <option key={item.id} value={item.id}>{item.name}</option>
+        ))}
       </select>
     </div>
   );

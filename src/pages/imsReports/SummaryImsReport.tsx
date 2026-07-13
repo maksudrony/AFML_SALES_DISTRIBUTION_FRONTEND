@@ -127,9 +127,9 @@ export const SummaryImsReport = () => {
           <ChannelSelect 
             userId={userId} 
             value={locationValues.channelId} 
-            onlyConsumer={true} 
             onChange={(val) => handleLocationChange('channelId', val)} 
             onError={setErrorBanner} 
+            includeValues={[1]}
           />
           <ZoneSelect 
             userId={userId} 
