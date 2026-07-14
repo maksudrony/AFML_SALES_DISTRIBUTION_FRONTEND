@@ -12,7 +12,7 @@ interface ChallanDistributorSelectProps {
 }
 
 export const ChallanDistributorSelect = ({ fromDate, toDate, channelId, userId, value, onChange, onError }: ChallanDistributorSelectProps) => {
-  const { data: ChallanDistributor = [], error } = useGetChallanDistributorQuery({ fromDate, toDate, channelId, userId });
+  const { data: challanDistributor = [], error } = useGetChallanDistributorQuery({ fromDate, toDate, channelId, userId });
 
   useEffect(() => {
     if (error) onError("Opps! Failed to connect with server");
@@ -30,7 +30,7 @@ export const ChallanDistributorSelect = ({ fromDate, toDate, channelId, userId, 
         h-[30px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-50 
         disabled:text-slate-400 truncate box-border cursor-pointer">
         <option value="">--Select--</option>
-        {ChallanDistributor.map((z) => (
+        {challanDistributor.map((z) => (
             <option key={z.id} value={z.id}>{z.name}</option>
         ))}
       </select>
