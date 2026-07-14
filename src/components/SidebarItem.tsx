@@ -16,6 +16,12 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({ item, isCollapsed, isO
   
   const currentBrowserPath = location.pathname ? location.pathname.toLowerCase() : '';
 
+  const shouldOpen =
+  isOpen ||
+  item.children?.some(
+    (child) => child.path?.toLowerCase() === currentBrowserPath
+  );
+
   if (hasChildren) {
     return (
       <div className="mb-0.5 font-sans select-none w-full overflow-hidden relative z-50 pointer-events-auto">
@@ -44,7 +50,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({ item, isCollapsed, isO
           )}
         </div>
         
-        {isOpen && !isCollapsed && (
+        {shouldOpen && !isCollapsed && (
           <div className="mt-0.5 pl-2 space-y-0.5 border-l border-slate-300 ml-4 transition-all duration-200 overflow-hidden">
             {item.children.map((subItem, index) => {
               const normalizedSubPath = subItem.path ? subItem.path.toLowerCase() : '';
