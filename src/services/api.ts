@@ -50,7 +50,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithReauth,
-  //keepUnusedDataFor: 600, // 10 minutes
   tagTypes: [
     'ProductCategory',
     'ProductDetail',
@@ -62,11 +61,11 @@ export const baseApi = createApi({
     'SalesChannelType',
     'QuantityType',
     'ReportType',
-    //DO AND LIFTING REPORT MENU
+    //-->DO AND LIFTING REPORT MENU
     'LiftingAndDoReport',
     'AverageRateRpt',
     'ProductWiseDeliveryReport',
-    //IMS REPORT MENU
+    //-->IMS REPORT MENU
     'SummaryImsReport'
   ], 
   endpoints: () => ({}),

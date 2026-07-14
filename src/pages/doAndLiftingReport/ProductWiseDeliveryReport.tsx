@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
 import { ProductParameterSelect } from '../../components/commonParameters/ProductParameter';
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton'; 
@@ -7,17 +7,58 @@ import { RGBSpinner } from '../../components/RGBSpinner';
 import { Search } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useLazyGetProductWiseDeliveryReportQuery } from '../../services/productWiseDeliveryReportApi';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { updateReportFilters, ReportKeys } from '../../features/reportCache/reportFiltersCacheSlice';
 
 
 export const ProductWiseDeliveryReport = () => {
+
+  const dispatch = useAppDispatch();
+
+  const cachedFilters = useAppSelector (
+    (state) => state.reportFiltersCache [ReportKeys.ProductWiseDeliveryRpt]
+  )
+
   const user = useAppSelector((state) => state.auth.user);
   const userId = user?.empEnroll || '';
   const tokenId = useAppSelector((state) => state.auth.token) || '';
 
   const [errorBanner, setErrorBanner] = useState<string>('');
-  const [fromDate, setFromDate] = useState<string>('');
-  const [toDate, setToDate] = useState<string>('');
-  const [selectedProduct, setSelectedProduct] = useState<number | ''>('');
+
+  /*const [fromDate, setFromDate] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<number | ''>('');*/
+
+  const [fromDate, setFromDate] = useState(
+		(cachedFilters?.fromDate as string) ?? ''
+	);
+
+	const [toDate, setToDate] = useState(
+		(cachedFilters?.toDate as string) ?? ''
+	);
+  
+	const [selectedProduct, setSelectedProduct] = useState<number | ''>(
+		(cachedFilters?.selectedChannelType as number | '') ?? ''
+	);
+
+  // Report filter parameter change hole Redux cache automatically update hobe
+  useEffect(() => {
+  dispatch(
+    updateReportFilters({
+      reportKey: ReportKeys.ProductWiseDeliveryRpt,
+      filters: {
+        fromDate,
+        toDate,
+        selectedProduct,
+      },
+    })
+  );
+  }, [
+    dispatch,
+    fromDate,
+    toDate,
+    selectedProduct,
+  ]);
+
   const [showReport, setShowReport] = useState<boolean>(false);
 
   const [isLocalLoading, setIsLocalLoading] = useState<boolean>(false);

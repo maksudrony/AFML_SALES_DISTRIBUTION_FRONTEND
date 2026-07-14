@@ -3,8 +3,11 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 // All Report Names
 export const ReportKeys = {
+  //DO AND LIFTING REPORT MENU
   AverageRateRpt: 'AverageRateRpt',
   LiftingAndDoRpt: 'LiftingAndDoRpt',
+  ProductWiseDeliveryRpt: 'ProductWiseDeliveryRpt',
+  //IMS REPORT MENU
   SummaryImsRpt: 'SummaryImsRpt',
 } as const;
 

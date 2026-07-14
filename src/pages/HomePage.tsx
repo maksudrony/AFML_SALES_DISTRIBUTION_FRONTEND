@@ -161,7 +161,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
           onMouseLeave={(e) => {
             if (window.innerWidth > 768) {
               dispatch(setSidebarOpen(false));
-              dispatch(toggleMenuIndex(-1));
+              // dispatch(toggleMenuIndex(-1));
             } else {
               e.preventDefault();
             }
