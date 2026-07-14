@@ -62,6 +62,7 @@ export const baseApi = createApi({
     'QuantityType',
     'ReportType',
     'TimeManagement',
+    'ChallanDistributor',
     //-->DO AND LIFTING REPORT MENU
     'LiftingAndDoReport',
     'AverageRateRpt',
