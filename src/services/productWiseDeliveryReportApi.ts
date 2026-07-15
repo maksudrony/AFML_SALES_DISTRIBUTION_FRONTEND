@@ -29,7 +29,6 @@ export const productWiseDeliveryReportApi = baseApi.injectEndpoints({
         method: 'GET',
         params, 
       }),
-      providesTags: ['ProductWiseDeliveryReport'],
     }),
   }),
 });

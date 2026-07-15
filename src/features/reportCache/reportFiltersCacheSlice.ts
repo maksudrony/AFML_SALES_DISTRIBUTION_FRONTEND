@@ -4,6 +4,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 // All Report Names
 export const ReportKeys = {
   //DO AND LIFTING REPORT MENU
+  DayWiseDelRpt: 'DayWiseDelRpt',
   AverageRateRpt: 'AverageRateRpt',
   LiftingAndDoRpt: 'LiftingAndDoRpt',
   ProductWiseDeliveryRpt: 'ProductWiseDeliveryRpt',

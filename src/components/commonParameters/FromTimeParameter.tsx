@@ -1,39 +1,47 @@
 import { useEffect } from 'react';
 import Select from 'react-select';
-import { useGetProductDetailsQuery } from '../../services/productParameterApi';
+import { useGetTimeManagementQuery } from '../../services/timeManagementApi';
 
-interface ProductParameterSelectProps {
-  value: string | number;
-  onChange: (value: number | '') => void;
+interface FromTimeProps {
+  fromTime: number;
+  onFromTimeChange: (value: number) => void;
   onError: (errorMsg: string) => void;
 }
 
-export const ProductParameterSelect = ({ value, onChange, onError }: ProductParameterSelectProps) => {
-  const { data: product = [], error } = useGetProductDetailsQuery();
+export const FromTimeSelect = ({fromTime, onFromTimeChange, onError,}: FromTimeProps) => {
+  const { data: fromTimeData = [], error } = useGetTimeManagementQuery();
 
   useEffect(() => {
     if (error) {
-      onError("Failed to load products");
+      onError('Failed to load Time Management');
     }
   }, [error, onError]);
 
   const options = [
-    { value: '', label: '-- All Products --' },
-    ...product.map(item => ({ value: item.id, label: item.name }))
+    ...fromTimeData.map(item => ({ value: item.id, label: item.name }))
   ];
 
-  const currentValue = options.find(opt => opt.value === value) || options[0];
+  const currentValue = options.find(opt => opt.value === fromTime) ?? null;
 
   return (
-    <div className="w-full flex flex-col relative z-50">
-      <label className="text-[10px] font-bold text-slate-700 uppercase truncate">
-        Product
-      </label>
-      
+    <>
+      {/* From Time */}
+      <div className="w-full flex flex-col relative z-50">
+        <label
+          htmlFor="from-time"
+          className="text-[10px] font-bold text-slate-700 uppercase truncate"
+        >
+          From Time
+        </label>
+
       <Select
         options={options}
         value={currentValue}
-        onChange={(selected) => onChange(selected ? (selected.value as number | '') : '')}
+        onChange={(selected) => {
+          if (selected) {
+            onFromTimeChange(selected.value as number)
+          }
+        }} 
         isSearchable={true}
         placeholder="Search product..."
         className="text-[11px] font-semibold w-full"
@@ -52,13 +60,15 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
           }),
           option: (base) => ({
             ...base,
-            fontSize: '10px',
+            fontSize: '11px',
             whiteSpace: 'normal',
             wordBreak: 'break-word',
             padding: '6px',
           })
         }}
       />
-    </div>
+      </div>
+
+    </>
   );
 };

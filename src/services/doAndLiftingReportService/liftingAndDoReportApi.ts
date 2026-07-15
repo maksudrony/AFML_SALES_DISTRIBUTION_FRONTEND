@@ -51,7 +51,6 @@ export const liftingAndDoReportApi = baseApi.injectEndpoints({
         method: 'GET',
         params, 
       }),
-      providesTags: ['LiftingAndDoReport'],
     }),
   }),
 });

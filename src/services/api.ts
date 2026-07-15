@@ -63,12 +63,6 @@ export const baseApi = createApi({
     'ReportType',
     'TimeManagement',
     'ChallanDistributor',
-    //-->DO AND LIFTING REPORT MENU
-    'LiftingAndDoReport',
-    'AverageRateRpt',
-    'ProductWiseDeliveryReport',
-    //-->IMS REPORT MENU
-    'SummaryImsReport'
   ], 
   endpoints: () => ({}),
 });

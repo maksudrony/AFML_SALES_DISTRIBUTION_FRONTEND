@@ -47,7 +47,6 @@ export const averageRateRptApi = baseApi.injectEndpoints({
         method: 'GET',
         params, 
       }),
-      providesTags: ['AverageRateRpt'],
     }),
   }),
 });

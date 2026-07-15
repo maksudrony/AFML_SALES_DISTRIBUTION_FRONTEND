@@ -89,6 +89,11 @@
     color: white !important;
 }
 
+.table-data:hover button {
+    background-color: #1B9C85 !important;
+    color: white !important;
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;

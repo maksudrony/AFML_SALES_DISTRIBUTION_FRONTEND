@@ -5,7 +5,8 @@ export interface IDayWiseDelRptMstParams {
   toDate: string;
   fromTime: number;
   toTime: number;
-  channelId: number | null;
+  channelId: number | '';
+  distribId: number | '';
   entryBy: string;
 }
 
@@ -28,6 +29,7 @@ export interface IDayWiseDelRptMstRow {
   territoryName: string;
 
   distribId: number;
+  distribCode: string;
   distribName: string;
   challanQty: number;
 }
@@ -43,6 +45,8 @@ export interface IDayWiseDelRptDtlRow {
   prodName: string;
   unitName: string;
   challanQty: number;
+  productPrice: number;
+  challanValue: number;
 }
 
 export const dayWiseDelRptApi = baseApi.injectEndpoints({
@@ -53,6 +57,7 @@ export const dayWiseDelRptApi = baseApi.injectEndpoints({
         method: 'GET',
         params, 
       }),
+      keepUnusedDataFor: 0,
     }),
 
     getDayWiseDelRptDtl: builder.query<IDayWiseDelRptDtlRow[], IDayWiseDelRptDtlParams>({
@@ -61,6 +66,7 @@ export const dayWiseDelRptApi = baseApi.injectEndpoints({
         method: 'GET',
         params, 
       }),
+      keepUnusedDataFor: 0, //no cache for query
     }),
   }),
 });

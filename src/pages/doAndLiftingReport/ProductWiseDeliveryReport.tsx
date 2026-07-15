@@ -130,7 +130,13 @@ export const ProductWiseDeliveryReport = () => {
             onError={setErrorBanner} 
           />
           <ShowReportButton onClick={handleShowReport} buttonAnimate={false} isLoading={showSpinner} />
-          <ExcelDownloadButton tableId="delivery-report-table" reportTitle="Akij Flour Mills Ltd. - Product Wise Delivery Report" fileName="Product Wise Delivery Report" hasData={reportData.length > 0} onError={setErrorBanner} />
+          <ExcelDownloadButton 
+            tableId="delivery-report-table" 
+            reportTitle="Akij Flour Mills Ltd. - Product Wise Delivery Report" 
+            fileName="Product Wise Delivery Report" 
+            hasData={reportData.length > 0} 
+            onError={setErrorBanner} 
+          />
         </div>
       </div>
 
