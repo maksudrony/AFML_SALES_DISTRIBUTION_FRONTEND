@@ -1,7 +1,7 @@
 import { baseApi } from './api';
 export interface IProductWiseDeliveryReportParams {
   fromDate: string;
-  todate: string;
+  toDate: string;
   entryBy: string;
   productId: number | null;
 }

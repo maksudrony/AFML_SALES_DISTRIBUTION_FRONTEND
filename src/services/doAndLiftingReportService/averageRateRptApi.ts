@@ -7,8 +7,8 @@ export interface IAverageRateRptParams {
   dayToDate: string;
   channelId: number | null;
   channelTypeId: number | null;
-  typeId: number;
-  reportTypeId: number;
+  typeId: number | null;
+  reportTypeId: number | null;
   entryBy: string;
 }
 

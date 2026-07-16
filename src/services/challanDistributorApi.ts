@@ -4,7 +4,7 @@ import type { ICommonParameterDto } from '../types/commonParameters';
 export interface IChallanDistributorParams {
   fromDate: string;
   toDate: string;
-  channelId: number | '';
+  channelId: number | null;
   userId: string;
 }
 

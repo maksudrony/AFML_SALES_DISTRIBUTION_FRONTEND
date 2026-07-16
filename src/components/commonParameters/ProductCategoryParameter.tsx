@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useGetProductCategoriesQuery } from '../../services/productCategoryApi';
 
 interface ProductCategorySelectProps {
-  value: string | number;
-  onChange: (value: number | '') => void;
+  value: number;
+  onChange: (value: number) => void;
   onError: (errorMsg: string) => void;
 }
 
@@ -26,11 +26,11 @@ export const ProductCategorySelect = ({ value, onChange, onError }: ProductCateg
         id="product-category-select"
         title="Select Product Category"
         value={value}
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
+        onChange={(e) => onChange(Number(e.target.value))}
         className="border border-slate-300 rounded-md p-1 text-[11px] font-semibold w-full 
         h-[28px] focus:outline-none focus:border-blue-500 bg-white truncate box-border"
       >
-        <option value="">-- All Categories --</option>
+        <option value={0}>-- All Categories --</option>
         {productCategories.map((item) => (
           <option key={item.id} value={item.id}>{item.name}</option>
         ))}

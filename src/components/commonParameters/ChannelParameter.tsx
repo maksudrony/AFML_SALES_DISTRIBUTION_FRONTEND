@@ -3,8 +3,8 @@ import { useGetChannelsQuery } from '../../services/channelParameterApi';
 
 interface ChannelSelectProps {
   userId: string;
-  value: number | '';
-  onChange: (value: number | '') => void;
+  value: number;
+  onChange: (value: number) => void;
   onError: (errorMsg: string) => void;
   includeValues?: number[];
 }
@@ -27,10 +27,10 @@ export const ChannelSelect = ({ userId, value, onChange, onError,  includeValues
         id="channel-select" 
         title="Select Channel" 
         value={value} 
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')} 
+        onChange={(e) => onChange(Number(e.target.value))} 
         className="border border-slate-300 rounded-md px-1 text-[11px] font-semibold w-full h-[30px] 
         focus:outline-none focus:border-blue-500 bg-white truncate box-border cursor-pointer">
-        <option value="">--Select--</option>
+        <option value={0}>--Select--</option>
         {filteredChannels.map((item) => (
           <option key={item.id} value={item.id}>{item.name}</option>
         ))}

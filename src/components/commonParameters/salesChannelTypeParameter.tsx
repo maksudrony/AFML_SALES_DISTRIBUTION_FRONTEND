@@ -3,8 +3,8 @@ import { useGetSalesChannelTypeQuery } from '../../services/salesChannelTypeApi'
 
 interface SalesChannelTypeSelectProps {
   userId: string;
-  value: number | '';
-  onChange: (value: number | '') => void;
+  value: number;
+  onChange: (value: number) => void;
   onError: (errorMsg: string) => void;
 }
 
@@ -32,11 +32,11 @@ export const SalesChannelTypeSelect = ({ userId, value, onChange, onError }: Sal
         id="sales-channel-type-select" 
         title="Select Sales Channel Type" 
         value={value} 
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')} 
+        onChange={(e) => onChange(Number(e.target.value))} 
         className="border border-slate-300 rounded-md px-1 text-[11px] font-semibold w-full 
         h-[30px] focus:outline-none focus:border-blue-500 bg-white disabled:bg-slate-50 
         disabled:text-slate-400 truncate box-border cursor-pointer">
-        <option value="">--Select--</option>
+        <option value={0}>--Select--</option>
         {salesChannelTypes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
       </select>
     </div>

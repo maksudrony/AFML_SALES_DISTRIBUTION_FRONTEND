@@ -58,11 +58,11 @@ export const DayWiseDelRpt = () => {
   const [toTime, setToTime] = useState<number>(
     (cachedFilters?.toTime as number) ?? 25
   );
-  const [selectedChannel, setSelectedChannel] = useState<number | ''>(
-    (cachedFilters?.selectedChannel as number | '') ?? ''
+  const [selectedChannel, setSelectedChannel] = useState<number>(
+    (cachedFilters?.selectedChannel as number) ?? 0
   );
-  const [selectedDistributor, setSelectedDistributor] = useState<number | ''>(
-    (cachedFilters?.selectedDistributor as number | '') ?? ''
+  const [selectedDistributor, setSelectedDistributor] = useState<number>(
+    (cachedFilters?.selectedDistributor as number) ?? 0
   );
 
   // Automatic Redux Cache Sync
@@ -101,8 +101,8 @@ export const DayWiseDelRpt = () => {
 			toDate: toDate,
 			fromTime: fromTime,
 			toTime: toTime,
-			channelId: selectedChannel,
-			distribId: selectedDistributor,
+			channelId: selectedChannel === 0 ? null : selectedChannel,
+			distribId: selectedDistributor === 0 ? null : selectedDistributor,
 			entryBy: userId});
 
   const [triggerDetailReport, { data: detailReport=[], isFetching: isDetailFetching }] = useLazyGetDayWiseDelRptDtlQuery();
@@ -148,29 +148,39 @@ export const DayWiseDelRpt = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 items-end gap-1 w-full
-				lg:w-[70%] mx-auto bg-transparent">
+				lg:w-[80%] mx-auto bg-transparent">
 					<FromDateSelect
 						fromDate={fromDate}
-						onFromDateChange={(val) => { setFromDate(val); }}   
+						onFromDateChange={(val) => { 
+              setFromDate(val); 
+            }}   
 					/>
 					<FromTimeSelect
 						fromTime={fromTime}
-						onFromTimeChange={(val) => { setFromTime(val); }}
+						onFromTimeChange={(val) => { 
+              setFromTime(val); 
+            }}
 						onError={setErrorBanner}
 					/>
 					<ToDateSelect
 						toDate={toDate}
-						onToDateChange={(val) => { setToDate(val); }}   
+						onToDateChange={(val) => { 
+              setToDate(val); 
+            }}   
 					/>
 					<ToTimeSelect
 						toTime={toTime}
-						onToTimeChange={(val) => { setToTime(val); }}
+						onToTimeChange={(val) => { 
+              setToTime(val); 
+            }}
 						onError={setErrorBanner}
 					/>
 					<ChannelSelect 
             userId={userId} 
             value={selectedChannel} 
-            onChange={(val) => { setSelectedChannel(val); }} 
+            onChange={(val) => { 
+              setSelectedChannel(val); 
+            }} 
             onError={setErrorBanner} 
 						includeValues={[]}
           />
@@ -180,7 +190,9 @@ export const DayWiseDelRpt = () => {
 						channelId={selectedChannel}
 						userId={userId} 
 						value={selectedDistributor} 
-						onChange={(val) => { setSelectedDistributor(val); }} 
+						onChange={(val) => { 
+              setSelectedDistributor(val); 
+            }} 
 						onError={setErrorBanner} 
 					/>
 					<ExcelDownloadButton 
@@ -260,7 +272,7 @@ export const DayWiseDelRpt = () => {
                       <td className="py-0 px-2 border border-slate-200">{row.channelName}</td>
                       <td className="py-0 px-2 border border-slate-200">{row.zoneName}</td>
                       <td className="py-0 px-2 border border-slate-200">{row.distribCode}</td>
-                      <td className="py-0 px-2 border border-slate-200 font-bold
+                      <td className="py-0 px-2 border border-slate-200 font-semibold
 											min-w-[250px] max-w-[500px] whitespace-normal text-[13px]
 											">{row.distribName}</td>
                       <td className={`py-0 px-2 border border-slate-200 text-end text-[13px]
@@ -325,23 +337,42 @@ export const DayWiseDelRpt = () => {
                     </thead>
                     <tbody className="text-[11px] divide-y divide-slate-200">
                       {detailReport.map((row, index) => {
+                        const isGrandTotal = row.prodCode === 'Grand Total';
+
+                        let rowTotalClass = "table-data";
+
+                        if (isGrandTotal) {
+                          rowTotalClass = "bg-orange-200 text-rose-700";
+                        } 
                         return (
-                          <tr key={index}>
-                            <td className="py-1.5 px-3 border border-slate-100 font-medium">{row.prodCode}</td>
+                          <tr key={index} className={rowTotalClass}>
+                            <td className={`py-1.5 px-3 border border-slate-100
+                              ${isGrandTotal ? 'text-[14px] font-semibold' 
+                              : 
+                              'text-[11px] font-medium'}`}>{row.prodCode}</td>
                             <td className="py-1.5 px-3 border border-slate-100 text-[12px]">{row.prodName}</td>
                             <td className="py-1.5 px-3 border border-slate-100 text-center">{row.unitName}</td>
-                            <td className="py-1.5 px-3 border border-slate-100 text-end font-semibold
-                              bg-green-100 text-rose-900 text-[12px]"
+                            <td className={`py-1.5 px-3 border border-slate-100 text-end font-semibold
+                              ${isGrandTotal ? 'bg-orange-200 text-rose-700 text-[14px]'
+                                :
+                                'bg-green-100 text-rose-900 text-[12px]'
+                              }`}
                             >
                               {formatDecimal(row.challanQty)}
                             </td>
-                            <td className="py-1.5 px-3 border border-slate-100 text-end font-semibold
-                              bg-yellow-100 text-rose-900 text-[12px]"
+                            <td className={`py-1.5 px-3 border border-slate-100 text-end font-semibold
+                              ${isGrandTotal ? 'bg-orange-200 text-rose-700 text-[14px]'
+                                :
+                                'bg-green-100 text-rose-900 text-[12px]'
+                              }`}
                             >
                               {formatDecimal(row.productPrice)}
                             </td>
-                            <td className="py-1.5 px-3 border border-slate-100 text-end font-semibold
-                              bg-orange-100 text-rose-900 text-[12px]"
+                            <td className={`py-1.5 px-3 border border-slate-100 text-end font-semibold
+                              ${isGrandTotal ? 'bg-orange-200 text-rose-700 text-[14px]'
+                                :
+                                'bg-green-100 text-rose-900 text-[12px]'
+                              }`}
                             >
                               {formatDecimal(row.challanValue)}
                             </td>

@@ -25,7 +25,8 @@ export const ShowReportButton = ({
           !flex-nowrap text-ellipsis overflow-hidden
           ${(buttonAnimate || isLoading)
             ? "bg-gradient-to-r from-indigo-500 via-pink-500 via-cyan-500 to-emerald-500 bg-[length:300%_100%] animate-gradient"
-            : "bg-[#D91656] hover:bg-[#b51246]"
+            : 
+            "bg-gradient-to-r from-orange-500 via-pink-500 to-rose-400 hover:from-orange-600 hover:via-pink-600 hover:to-rose-500 hover:shadow-xl"
           }
         `}
       >

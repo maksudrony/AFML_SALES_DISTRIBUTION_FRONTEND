@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
-import { CommonDayDateRange } from '../../components/commonParameters/CommonDayDateRange';
+import { FromDateSelect } from '../../components/commonParameters/FromDateParameter';
+import { ToDateSelect } from '../../components/commonParameters/ToDateParameter';
+import { DayFromDateSelect } from '../../components/commonParameters/DayFromDate';
+import { DayToDateSelect } from '../../components/commonParameters/DayToDate';
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton'; 
 import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
 import { ExcelDownloadButtonV2 } from '../../components/commonParameters/ExcelDownloadButtonV2'
@@ -71,20 +73,20 @@ export const AverageRateRpt = () => {
 		(cachedFilters?.dayToDate as string) ?? defaultToDate
 	);
   
-	const [selectedChannelType, setSelectedChannelType] = useState<number | ''>(
-		(cachedFilters?.selectedChannelType as number | '') ?? 0
+	const [selectedChannelType, setSelectedChannelType] = useState<number>(
+		(cachedFilters?.selectedChannelType as number) ?? 1
 	);
 
-	const [selectedChannel, setSelectedChannel] = useState<number | ''>(
-		(cachedFilters?.selectedChannel as number | '') ?? ''
+	const [selectedChannel, setSelectedChannel] = useState<number>(
+		(cachedFilters?.selectedChannel as number) ?? 0
 	);
 
-	const [selectedQuantityType, setSelectedQuantityType] = useState<number | ''>(
-		(cachedFilters?.selectedQuantityType as number | '') ?? 1
+	const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
+		(cachedFilters?.selectedQuantityType as number) ?? 1
 	);
 
-	const [selectedReportType, setSelectedReportType] = useState<number | ''>(
-		(cachedFilters?.selectedReportType as number | '') ?? 1
+	const [selectedReportType, setSelectedReportType] = useState<number>(
+		(cachedFilters?.selectedReportType as number) ?? 1
 	);
 
 	// Report filter parameter change hole Redux cache automatically update hobe
@@ -161,7 +163,7 @@ export const AverageRateRpt = () => {
       setErrorBanner("Opps! Report Type cannot be null!! Please select a Report Type first!");
       return;
     }
-    else if (selectedChannelType === '') {
+    else if (selectedChannelType === 0) {
       setErrorBanner("Opps! Channel Type cannot be null!! Please select a Channel Type first!");
       return;
     }
@@ -175,10 +177,10 @@ export const AverageRateRpt = () => {
         toDate,
         dayFromDate,
         dayToDate,
-        channelId: selectedChannel === '' ? null : selectedChannel,
-        channelTypeId: selectedChannelType, 
-        typeId: selectedQuantityType,
-        reportTypeId: selectedReportType,
+        channelId: selectedChannel === 0 ? null : selectedChannel,
+        channelTypeId: selectedChannelType === 0 ? null : selectedChannelType, 
+        typeId: selectedQuantityType === 0 ? null : selectedQuantityType,
+        reportTypeId: selectedReportType === 0 ? null : selectedReportType,
         entryBy: userId
       }, false).unwrap();
       
@@ -212,16 +214,20 @@ export const AverageRateRpt = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-11 items-end gap-1 w-full bg-transparent ">
-          <CommonDateRange
-            fromDate={fromDate}
-            toDate={toDate}
-            onFromDateChange={(val) => { setFromDate(val); setShowReport(false); }} 
-            onToDateChange={(val) => { setToDate(val); setShowReport(false); }}   
-          />
-          <CommonDayDateRange
+					<FromDateSelect
+						fromDate={fromDate}
+						onFromDateChange={(val) => { setFromDate(val); }}   
+					/>
+					<ToDateSelect
+						toDate={toDate}
+						onToDateChange={(val) => { setToDate(val); }}   
+					/>
+          <DayFromDateSelect
             dayFromDate={dayFromDate}
+            onDayFromDateChange={(val) => { setDayFromDate(val); setShowReport(false); }}  
+          />
+          <DayToDateSelect
             dayToDate={dayToDate}
-            onDayFromDateChange={(val) => { setDayFromDate(val); setShowReport(false); }} 
             onDayToDateChange={(val) => { setDayToDate(val); setShowReport(false); }}   
           />
           <SalesChannelTypeSelect 

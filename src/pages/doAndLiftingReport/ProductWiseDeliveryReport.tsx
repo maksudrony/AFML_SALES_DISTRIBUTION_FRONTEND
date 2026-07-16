@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
+import { FromDateSelect } from '../../components/commonParameters/FromDateParameter';
+import { ToDateSelect } from '../../components/commonParameters/ToDateParameter';
 import { ProductParameterSelect } from '../../components/commonParameters/ProductParameter';
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton'; 
 import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
@@ -25,19 +26,33 @@ export const ProductWiseDeliveryReport = () => {
 
   const [errorBanner, setErrorBanner] = useState<string>('');
 
-  /*const [fromDate, setFromDate] = useState<string>('');
-  const [selectedProduct, setSelectedProduct] = useState<number | ''>('');*/
+  const formatDate = (date: Date) => 
+  {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const defaultFromDate = formatDate(firstDayOfMonth);
+  const defaultToDate = formatDate(today);
+
 
   const [fromDate, setFromDate] = useState(
-		(cachedFilters?.fromDate as string) ?? ''
+		(cachedFilters?.fromDate as string) ?? defaultFromDate
 	);
 
 	const [toDate, setToDate] = useState(
-		(cachedFilters?.toDate as string) ?? ''
+		(cachedFilters?.toDate as string) ?? defaultToDate
 	);
   
-	const [selectedProduct, setSelectedProduct] = useState<number | ''>(
-		(cachedFilters?.selectedChannelType as number | '') ?? ''
+	const [selectedProduct, setSelectedProduct] = useState<number>(
+		(cachedFilters?.selectedChannelType as number) ?? 0
 	);
 
   // Report filter parameter change hole Redux cache automatically update hobe
@@ -84,9 +99,9 @@ export const ProductWiseDeliveryReport = () => {
     try {
       const res = await triggerReport({
         fromDate,
-        todate: toDate,
+        toDate,
         entryBy: userId,
-        productId: selectedProduct === '' ? null : selectedProduct
+        productId: selectedProduct === 0 ? null : selectedProduct
       }, false).unwrap();
       
       if (res) {
@@ -111,22 +126,31 @@ export const ProductWiseDeliveryReport = () => {
         </div>
       )}
 
-      <div className="report-parameter-box p-3 rounded-xl shadow-sm w-full flex flex-col gap-1">
+      <div className="report-parameter-box p-3 rounded-xl shadow-xl w-full flex flex-col gap-1">
         <div className="text-center w-full">
           <h3 className="page-main-header">AKIJ FLOUR MILLS LTD.</h3>
           <p className="page-sub-header">PRODUCT WISE DELIVERY REPORT</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 items-end gap-3 w-full lg:w-[70%] mx-auto ">
-          <CommonDateRange
-            fromDate={fromDate}
-            toDate={toDate}
-            onFromDateChange={(val) => { setFromDate(val); setShowReport(false);; }} 
-            onToDateChange={(val) => { setToDate(val); setShowReport(false); }}   
-          />
+          <FromDateSelect
+						fromDate={fromDate}
+						onFromDateChange={(val) => { 
+              setFromDate(val); 
+            }}   
+					/>
+          <ToDateSelect
+						toDate={toDate}
+						onToDateChange={(val) => { 
+              setToDate(val); 
+            }}   
+					/>
           <ProductParameterSelect 
             value={selectedProduct} 
-            onChange={(val) => { setSelectedProduct(val); setShowReport(false); }} 
+            onChange={(val) => { 
+              setSelectedProduct(val); 
+              setShowReport(false); 
+            }} 
             onError={setErrorBanner} 
           />
           <ShowReportButton onClick={handleShowReport} buttonAnimate={false} isLoading={showSpinner} />

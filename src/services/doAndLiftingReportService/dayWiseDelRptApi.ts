@@ -5,8 +5,8 @@ export interface IDayWiseDelRptMstParams {
   toDate: string;
   fromTime: number;
   toTime: number;
-  channelId: number | '';
-  distribId: number | '';
+  channelId: number | null;
+  distribId: number | null;
   entryBy: string;
 }
 

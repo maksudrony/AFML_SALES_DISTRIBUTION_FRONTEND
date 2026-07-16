@@ -136,8 +136,10 @@ export const ExcelDownloadButton = ({
       <button 
         type="button"
         onClick={exportToExcel}
-        className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 bg-emerald-600 
-        hover:bg-emerald-700 text-white font-bold text-[10px] tracking-wider rounded-md 
+        className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 
+        bg-gradient-to-r from-[#00C853] via-[#00BFA5] to-[#00ACC1]
+      hover:from-emerald-600 hover:via-teal-500 hover:to-cyan-500 shadaw-lg hover:shadow-xl
+        text-white font-bold text-[10px] tracking-wider rounded-md 
         shadow-sm cursor-pointer transition-colors whitespace-nowrap !flex-nowrap text-ellipsis 
         overflow-hidden"
       >

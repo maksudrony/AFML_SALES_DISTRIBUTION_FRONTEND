@@ -43,7 +43,7 @@ export const FromTimeSelect = ({fromTime, onFromTimeChange, onError,}: FromTimeP
           }
         }} 
         isSearchable={true}
-        placeholder="Search product..."
+        placeholder="Select Time"
         className="text-[11px] font-semibold w-full"
         styles={{
           control: (base) => ({

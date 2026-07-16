@@ -3,8 +3,8 @@ import Select from 'react-select';
 import { useGetProductDetailsQuery } from '../../services/productParameterApi';
 
 interface ProductParameterSelectProps {
-  value: string | number;
-  onChange: (value: number | '') => void;
+  value: number;
+  onChange: (value: number) => void;
   onError: (errorMsg: string) => void;
 }
 
@@ -18,7 +18,7 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
   }, [error, onError]);
 
   const options = [
-    { value: '', label: '-- All Products --' },
+    { value: 0, label: '-- All Products --' },
     ...product.map(item => ({ value: item.id, label: item.name }))
   ];
 
@@ -33,7 +33,7 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
       <Select
         options={options}
         value={currentValue}
-        onChange={(selected) => onChange(selected ? (selected.value as number | '') : '')}
+        onChange={(selected) => onChange(selected?.value ?? 0)}
         isSearchable={true}
         placeholder="Search product..."
         className="text-[11px] font-semibold w-full"

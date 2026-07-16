@@ -50,9 +50,11 @@ export const PdfPrintButton = ({
       <button 
         type="button"
         onClick={onClickHandler}
-        className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 bg-blue-600 
-        hover:bg-blue-700 text-white font-bold text-[10px] tracking-wider rounded-md 
-        shadow-sm cursor-pointer transition-colors whitespace-nowrap !flex-nowrap text-ellipsis 
+        className="flex items-center justify-center w-full h-[30px] gap-1.5 px-4 
+        bg-gradient-to-r from-sky-600  via-purple-500 to-pink-400
+      hover:from-sky-700 hover:via-purple-600 hover:to-pink-500 hover:shadow-xl
+        text-white font-bold text-[10px] tracking-wider rounded-md 
+        cursor-pointer transition-colors whitespace-nowrap !flex-nowrap text-ellipsis 
         overflow-hidden"
       >
         <span className="flex-shrink-0">PDF</span> 

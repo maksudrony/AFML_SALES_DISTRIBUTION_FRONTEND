@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { RGBSpinner } from '../../components/RGBSpinner';
-import { CommonDateRange } from '../../components/commonParameters/CommonDateRange';
+import { FromDateSelect } from '../../components/commonParameters/FromDateParameter';
+import { ToDateSelect } from '../../components/commonParameters/ToDateParameter';
 
 import { ChannelSelect } from '../../components/commonParameters/ChannelParameter';
 import { ZoneSelect } from '../../components/commonParameters/ZoneParameter';
@@ -12,7 +13,6 @@ import { TerritorySelect } from '../../components/commonParameters/TerritoryPara
 import { ProductCategorySelect } from '../../components/commonParameters/ProductCategoryParameter';
 import { ShowReportButton } from '../../components/commonParameters/ShowReportButton';
 import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
-import type { ICommonParametersState } from '../../types/commonParameters';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useLazyGetSummaryImsReportQuery } from '../../services/summaryImsReportApi';
 import type { IImsReportRow } from '../../services/summaryImsReportApi';
@@ -25,15 +25,13 @@ export const SummaryImsReport = () => {
   const [errorBanner, setErrorBanner] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
-  const [selectedProdCat, setSelectedProdCat] = useState<number | ''>('');
+  const [selectedProdCat, setSelectedProdCat] = useState<number>(0);
 
-  const [locationValues, setLocationValues] = useState<ICommonParametersState>({
-    channelId: 1, 
-    zoneId: '',
-    divisionId: '',
-    areaId: '',
-    territoryId: ''
-  });
+  const [selectedChannel, setSelectedChannel] = useState<number>(1);
+  const [selectedZone, setSelectedZone] = useState<number>(0);
+  const [selectedDivision, setSelectedDivision] = useState<number>(0);
+  const [selectedArea, setSelectedArea] = useState<number>(0);
+  const [selectedTerritory, setSelectedTerritory] = useState<number>(0);
 
   const [showReport, setShowReport] = useState<boolean>(false);
   
@@ -46,27 +44,14 @@ export const SummaryImsReport = () => {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
-  const handleLocationChange = (field: keyof ICommonParametersState, value: number | '') => {
-    setShowReport(false);
-    setLocationValues((prev) => {
-      const updated = { ...prev, [field]: value };
-      if (field === 'channelId') {
-        updated.zoneId = ''; updated.divisionId = ''; updated.areaId = ''; updated.territoryId = '';
-      } else if (field === 'zoneId') {
-        updated.divisionId = ''; updated.areaId = ''; updated.territoryId = '';
-      } else if (field === 'divisionId') {
-        updated.areaId = ''; updated.territoryId = '';
-      } else if (field === 'areaId') {
-        updated.territoryId = '';
-      }
-      return updated;
-    });
-  };
-
   const handleShowReport = async () => {
     setErrorBanner('');
     if (!fromDate || !toDate) {
       setErrorBanner("Opps! Dates cannot be null!! Please select From Date and To Date first!");
+      return;
+    }
+    else if (selectedChannel === 0) {
+      setErrorBanner("Opps! Channel Type cannot be null!! Please select a Channel Type first!");
       return;
     }
 
@@ -77,13 +62,13 @@ export const SummaryImsReport = () => {
       const res = await triggerReport({
         fromDate,
         toDate,
-        prodCatId: selectedProdCat === '' ? null : selectedProdCat, // '' এর বদলে null
+        prodCatId: selectedProdCat === 0 ? null : selectedProdCat,
         entryBy: userId,
-        channelId: locationValues.channelId === '' ? null : locationValues.channelId,
-        zoneId: locationValues.zoneId === '' ? null : locationValues.zoneId,
-        divisionId: locationValues.divisionId === '' ? null : locationValues.divisionId,
-        areaId: locationValues.areaId === '' ? null : locationValues.areaId,
-        territoryId: locationValues.territoryId === '' ? null : locationValues.territoryId
+        channelId: selectedChannel === 0 ? null : selectedChannel,
+        zoneId: selectedZone === 0 ? null : selectedZone,
+        divisionId: selectedDivision === 0 ? null : selectedDivision,
+        areaId: selectedArea === 0 ?null : selectedArea,
+        territoryId: selectedTerritory === 0 ? null : selectedTerritory
       }, false).unwrap();
 
       if (res) {
@@ -117,52 +102,82 @@ export const SummaryImsReport = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-10 items-end gap-1.5 w-full bg-transparent">
-          <CommonDateRange
-            fromDate={fromDate}
-            toDate={toDate}
-            onFromDateChange={(val) => { setFromDate(val); setShowReport(false);; }} 
-            onToDateChange={(val) => { setToDate(val); setShowReport(false);; }}     
-          />
+          <FromDateSelect
+						fromDate={fromDate}
+						onFromDateChange={(val) => { setFromDate(val); }}   
+					/>
+          <ToDateSelect
+						toDate={toDate}
+						onToDateChange={(val) => { setToDate(val); }}   
+					/>
 
           <ChannelSelect 
             userId={userId} 
-            value={locationValues.channelId} 
-            onChange={(val) => handleLocationChange('channelId', val)} 
+            value={selectedChannel} 
+            onChange={(val) => {
+              setSelectedChannel(val);
+              setSelectedZone(0);
+              setSelectedDivision(0);
+              setSelectedArea(0);
+              setSelectedTerritory(0);
+              setShowReport(false);
+            }} 
             onError={setErrorBanner} 
             includeValues={[1]}
           />
           <ZoneSelect 
             userId={userId} 
-            channelId={locationValues.channelId} 
-            value={locationValues.zoneId} 
-            onChange={(val) => handleLocationChange('zoneId', val)} 
+            channelId={selectedChannel} 
+            value={selectedZone} 
+            onChange={(val) => {
+              setSelectedZone(val);
+              setSelectedDivision(0);
+              setSelectedArea(0);
+              setSelectedTerritory(0);
+              setShowReport(false);
+            }} 
             onError={setErrorBanner} 
           />
           <DivisionSelect 
             userId={userId} 
-            zoneId={locationValues.zoneId} 
-            value={locationValues.divisionId} 
-            onChange={(val) => handleLocationChange('divisionId', val)} 
+            zoneId={selectedZone} 
+            value={selectedDivision} 
+            onChange={(val) => {
+              setSelectedDivision(val);
+              setSelectedArea(0);
+              setSelectedTerritory(0);
+              setShowReport(false);
+            }} 
             onError={setErrorBanner} 
           />
           <AreaSelect 
             userId={userId} 
-            divisionId={locationValues.divisionId} 
-            value={locationValues.areaId} 
-            onChange={(val) => handleLocationChange('areaId', val)} 
+            divisionId={selectedDivision} 
+            value={selectedArea} 
+            onChange={(val) => {
+              setSelectedArea(val);
+              setSelectedTerritory(0);
+              setShowReport(false);
+            }} 
             onError={setErrorBanner} 
           />
           <TerritorySelect 
             userId={userId} 
-            areaId={locationValues.areaId} 
-            value={locationValues.territoryId} 
-            onChange={(val) => handleLocationChange('territoryId', val)} 
+            areaId={selectedArea} 
+            value={selectedTerritory} 
+            onChange={(val) => {
+              setSelectedTerritory(val);
+              setShowReport(false);
+            }} 
             onError={setErrorBanner} 
           />
 
           <ProductCategorySelect 
             value={selectedProdCat} 
-            onChange={(val) => { setSelectedProdCat(val); setShowReport(false); }} 
+            onChange={(val) => { 
+              setSelectedProdCat(val); 
+              setShowReport(false); 
+            }} 
             onError={setErrorBanner} 
           />
 
