@@ -7,6 +7,7 @@ export const ReportKeys = {
   DayWiseDelRpt: 'DayWiseDelRpt',
   AverageRateRpt: 'AverageRateRpt',
   LiftingAndDoRpt: 'LiftingAndDoRpt',
+  DistribWisePendingRpt: 'DistribWisePendingRpt',
   ProductWiseDeliveryRpt: 'ProductWiseDeliveryRpt',
   //IMS REPORT MENU
   SummaryImsRpt: 'SummaryImsRpt',

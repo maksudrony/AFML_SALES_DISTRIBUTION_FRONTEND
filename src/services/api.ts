@@ -62,7 +62,6 @@ export const baseApi = createApi({
     'QuantityType',
     'ReportType',
     'TimeManagement',
-    'ChallanDistributor',
   ], 
   endpoints: () => ({}),
 });

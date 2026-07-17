@@ -17,7 +17,6 @@ export const challanDistributorApi = baseApi.injectEndpoints({
         params,
       }),
       keepUnusedDataFor: 0, //no cache for query
-      providesTags: ['ChallanDistributor'],
     }),
   }),
 });
