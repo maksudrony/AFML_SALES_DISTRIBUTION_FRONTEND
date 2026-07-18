@@ -204,7 +204,8 @@ export const LiftingAndDoReport = () => {
   const showSpinner = isFetching || isLocalLoading;
 
   return (
-    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white min-h-screen box-border shadow-none">
+    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white 
+    box-border shadow-none">
       {errorBanner && (
         <div className="p-1 bg-red-100 border border-red-300 rounded-md text-red-700 text-[15px] font-bold flex items-center justify-between w-full">
           <span>🤒 {errorBanner} ❗</span>

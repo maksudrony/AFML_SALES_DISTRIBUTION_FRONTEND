@@ -30,7 +30,7 @@ export const ChannelDistributorSelect = ({ channelId, userId, value, onChange, o
   const currentValue = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div className="w-full flex flex-col relative z-50">
+    <div className="w-full flex flex-col">
       <label 
         htmlFor="challan-distributor-select" 
         className="text-[10px] font-bold text-slate-700 uppercase truncate"
@@ -65,7 +65,17 @@ export const ChannelDistributorSelect = ({ channelId, userId, value, onChange, o
             whiteSpace: 'normal',
             wordBreak: 'break-word',
             padding: '6px',
-          })
+          }),
+
+          menu: (base) => ({
+            ...base,
+            zIndex: 35,
+          }),
+
+          menuPortal: (base) => ({
+            ...base,
+            zIndex: 35,
+          }),
         }}
       />
     </div>

@@ -28,7 +28,7 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
   const [userDropdown, setUserDropdown] = useState(false);
 
   return (
-    <div className="w-full h-[100dvh] flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
+    <div className="w-full h-screen flex flex-col bg-slate-50 overflow-hidden font-sans m-0 p-0">
       
       {/* Navbar Area */}
       <nav className="w-full h-12 navbar-color  
@@ -199,7 +199,8 @@ export const HomePage: React.FC<HomePageProps> = ({ empName, onLogout, children 
         )}
 
         {/* Main Workspace Area */}
-        <main className="flex-1 overflow-hidden p-4 sm:p-6 bg-white relative w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 
+        bg-white relative w-full">
           {children}
         </main>
       </div>

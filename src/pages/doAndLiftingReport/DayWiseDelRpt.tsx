@@ -130,7 +130,8 @@ export const DayWiseDelRpt = () => {
   const showSpinner = isMasterFetching;
 
   return (
-    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white min-h-screen box-border shadow-none">
+    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white 
+    box-border shadow-none">
       
       {/* Error Banner */}
       {errorBanner && (

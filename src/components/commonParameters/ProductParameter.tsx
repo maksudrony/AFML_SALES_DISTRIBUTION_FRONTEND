@@ -25,7 +25,7 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
   const currentValue = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div className="w-full flex flex-col relative z-50">
+    <div className="w-full flex flex-col">
       <label className="text-[10px] font-bold text-slate-700 uppercase truncate">
         Product
       </label>
@@ -56,7 +56,16 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
             whiteSpace: 'normal',
             wordBreak: 'break-word',
             padding: '6px',
-          })
+          }),
+          menu: (base) => ({
+            ...base,
+            zIndex: 35,
+          }),
+
+          menuPortal: (base) => ({
+            ...base,
+            zIndex: 35,
+          }),
         }}
       />
     </div>

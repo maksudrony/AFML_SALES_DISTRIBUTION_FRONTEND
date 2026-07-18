@@ -1,18 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { FromDateSelect } from '../../components/commonParameters/FromDateParameter';
 import { ToDateSelect } from '../../components/commonParameters/ToDateParameter';
-import { FromTimeSelect } from '../../components/commonParameters/FromTimeParameter';
-import { ToTimeSelect } from '../../components/commonParameters/ToTimeParameter';
 import { ExcelDownloadButton } from '../../components/commonParameters/ExcelDownloadButton';
 import { PdfPrintButton } from '../../components/commonParameters/PdfPrintButton';
+import { ShowReportButton } from '../../components/commonParameters/ShowReportButton';
 import { RGBSpinner } from '../../components/RGBSpinner';
 import { Search, X } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateReportFilters, ReportKeys } from '../../features/reportCache/reportFiltersCacheSlice';
 import { ChannelSelect } from '../../components/commonParameters/ChannelParameter';
-import { ChallanDistributorSelect } from '../../components/commonParameters/ChallanDistributorParameter';
-import { useLazyGetDistribWisePendingRptQuery } from '../../services/doAndLiftingReportService/distribWisePendingRptApi'
+import { useLazyGetDistribWisePendingRptQuery } from '../../services/doAndLiftingReportService/distribWisePendingRptApi';
+import type { IDistribWisePendingRptRow } from '../../services/doAndLiftingReportService/distribWisePendingRptApi';
 import { ZoneSelect } from '../../components/commonParameters/ZoneParameter';
 import { DivisionSelect } from '../../components/commonParameters/DivisionParameter';
 import { AreaSelect } from '../../components/commonParameters/AreaParameter';
@@ -45,9 +44,6 @@ export const DistribWisePendingRpt = () => {
 
   const [errorBanner, setErrorBanner] = useState<string>('');
 
-  // Dom reference for printing container area (Master Report Only)
-  const reportPrintRef = useRef<HTMLDivElement>(null);
-
   // States with Cache Fallbacks
   const [fromDate, setFromDate] = useState<string>(
     (cachedFilters?.fromDate as string) ?? null
@@ -59,22 +55,22 @@ export const DistribWisePendingRpt = () => {
     (cachedFilters?.selectedChannel as number) ?? 0
   );
   const [selectedZone, setSelectedZone] = useState<number>(
-    (cachedFilters?.selectedChannel as number) ?? 0
+    (cachedFilters?.selectedZone as number) ?? 0
   );
   const [selectedDivision, setSelectedDivision] = useState<number>(
-    (cachedFilters?.selectedChannel as number) ?? 0
+    (cachedFilters?.selectedDivision as number) ?? 0
   );
   const [selectedArea, setSelectedArea] = useState<number>(
-    (cachedFilters?.selectedChannel as number) ?? 0
+    (cachedFilters?.selectedArea as number) ?? 0
   );
   const [selectedTerritory, setSelectedTerritory] = useState<number>(
-    (cachedFilters?.selectedChannel as number) ?? 0
+    (cachedFilters?.selectedTerritory as number) ?? 0
   );
   const [selectedDistributor, setSelectedDistributor] = useState<number>(
     (cachedFilters?.selectedDistributor as number) ?? 0
   );
 	const [selectedProduct, setSelectedProduct] = useState<number>(
-		(cachedFilters?.selectedChannelType as number) ?? 0
+		(cachedFilters?.selectedProduct as number) ?? 0
 	);
 
 	const [selectedOrderType, setSelectedOrderType] = useState<number>(
@@ -85,7 +81,7 @@ export const DistribWisePendingRpt = () => {
   useEffect(() => {
     dispatch(
       updateReportFilters({
-        reportKey: ReportKeys.DayWiseDelRpt,
+        reportKey: ReportKeys.DistribWisePendingRpt,
         filters: {
           fromDate,
           toDate,
@@ -125,11 +121,11 @@ export const DistribWisePendingRpt = () => {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
-   const handleShowReport = async () => {
+  const handleShowReport = async () => {
 
     setErrorBanner('');
-    if (!fromDate || !toDate) {
-      setErrorBanner("Opps! Dates cannot be null!! Please select From Date and To Date first!");
+    if (selectedOrderType === null ) {
+      setErrorBanner("Opps! Please Select Order Type!");
       return;
     }
     
@@ -146,7 +142,7 @@ export const DistribWisePendingRpt = () => {
 				areaId: selectedArea === 0 ? null : selectedArea,
 				territoryId: selectedTerritory === 0 ? null : selectedTerritory,
 				productId: selectedProduct === 0 ? null : selectedProduct,
-				distribId: selectedChannel === 0 ? null : selectedChannel,
+				distribId: selectedDistributor === 0 ? null : selectedDistributor,
 				orderTypeId: selectedOrderType
       }, false).unwrap();
       
@@ -165,7 +161,7 @@ export const DistribWisePendingRpt = () => {
   const showSpinner = isFetching || isLocalLoading;
 
   return (
-    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white min-h-screen box-border shadow-none">
+    <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white  box-border shadow-none">
       
       {/* Error Banner */}
       {errorBanner && (
@@ -179,11 +175,11 @@ export const DistribWisePendingRpt = () => {
       <div className="report-parameter-box p-3 rounded-xl shadow-sm w-full flex flex-col gap-1">
         <div className="text-center w-full">
           <h3 className="page-main-header">AKIJ FLOUR MILLS LTD.</h3>
-          <p className="page-sub-header">DAY WISE DELIVERY REPORT</p>
+          <p className="page-sub-header">DISTRIBUTOR WISE PRNDING REPORT</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 items-end gap-1 w-full
-				lg:w-[80%] mx-auto bg-transparent">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 items-end gap-1 w-full
+			  mx-auto bg-transparent">
 					<FromDateSelect
 						fromDate={fromDate}
 						onFromDateChange={(val) => { 
@@ -261,6 +257,7 @@ export const DistribWisePendingRpt = () => {
 						value={selectedDistributor} 
 						onChange={(val) => { 
               setSelectedDistributor(val); 
+              setShowReport(false);
             }} 
 						onError={setErrorBanner} 
 					/>
@@ -272,16 +269,29 @@ export const DistribWisePendingRpt = () => {
             }} 
             onError={setErrorBanner} 
           />
-					<select
-						value={selectedOrderType}
-						onChange={(e) => setSelectedOrderType(Number(e.target.value))}
-					>
-						{ORDER_TYPE_OPTIONS.map((item) => (
-							<option key={item.value} value={item.value}>
-								{item.label}
-							</option>
-						))}
-					</select>
+          <div className="w-full flex flex-col">
+            <label htmlFor="order-type-select" className="text-[10px] font-bold text-slate-700 uppercase truncate">Order Type</label>
+            <select 
+              id="order-type-select" 
+              title="Select Order Type" 
+              value={selectedOrderType} 
+              onChange={(e) => {
+                 setSelectedOrderType(Number(e.target.value));
+                 setShowReport(false);
+              }} 
+              className="border border-slate-300 rounded-md px-1 text-[11px] font-semibold w-full h-[30px] 
+              focus:outline-none focus:border-blue-500 bg-white truncate box-border cursor-pointer">
+              {/* <option value={0}>--Select--</option> */}
+              {ORDER_TYPE_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+          <ShowReportButton 
+            onClick={handleShowReport} 
+            buttonAnimate={false} 
+            isLoading={showSpinner} 
+          />
 					<ExcelDownloadButton 
 						tableId="distrib-wise-pending-rpt-table" 
 						reportTitle="Distributor Wise Pending Report" 
@@ -289,86 +299,78 @@ export const DistribWisePendingRpt = () => {
 						hasData={reportData.length > 0}
 						onError={setErrorBanner} 
 					/>
-					<PdfPrintButton 
-						contentRef={reportPrintRef} 
-						hasData={reportData.length > 0} 
-						documentTitle="Distributor Wise Pending Report"
-						orientation="portrait"
-						onError={setErrorBanner} 
-					/>
         </div>
       </div>
 
-      {/* Main Master Report Container */}
-      <div ref={reportPrintRef} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 max-h-[425px] w-full box-border printable-report-area">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 
+      max-h-[425px] w-full box-border">
+        {showSpinner && <RGBSpinner />}
         
-        <div className="print-only-preview-header text-center mb-4 hidden print:block">
-          <h2 className="page-main-header">AKIJ FLOUR MILLS LTD.</h2>
-          <h3 className="page-sub-header">DAY WISE DELIVERY REPORT</h3>
-        </div>
-
-        {showSpinner && <RGBSpinner />} 
-
-        {!showSpinner && masterReport.length === 0 && (
+        {!showSpinner && ( !showReport || reportData.length === 0 ) && (
           <div className="flex flex-col items-center justify-center p-20 text-slate-400 gap-2">
             <Search className="w-8 h-8 text-slate-300" />
             <p className="text-xs font-medium">Please click 'Show Report'.</p>
           </div>
         )}
-
-        {!showSpinner && masterReport.length > 0 && (
+        
+        {!showSpinner && showReport && reportData.length > 0 && (
           <div className="w-full overflow-auto max-h-[420px]">
-            <table id="day-wise-del-mst-table" className="w-full text-left border-separate border-spacing-0">
+            <table id="distrib-wise-pending-rpt-table" className="w-full text-left border-separate border-spacing-0">
               <thead>
-                <tr className="h-6 text-[10px] font-bold uppercase whitespace-nowrap">
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">DC No</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">DC Date</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">Confirm Date</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">DO No</th>
+                <tr className="text-[10px] font-bold uppercase whitespace-nowrap">
                   <th className="p-1 px-2 table-header sticky top-0 z-30">Channel</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">Zone</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">Distributor Code</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Division</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Territory</th>
                   <th className="p-1 px-2 table-header sticky top-0 z-30">Distributor</th>
-                  <th className="p-1 px-2 table-header sticky top-0 z-30">Challan Qty (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Do No</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Po No</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Delivery Point</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Do Date</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Product</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Do Qty (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Do Qty (M.Ton)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Pending (Bag)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Pending (M.Ton)</th>
+                  <th className="p-1 px-2 table-header sticky top-0 z-30">Rate</th>
                 </tr>
-              </thead>
-              <tbody className="text-[11px] divide-y divide-slate-200">
-                {masterReport.map((row, index) => {
-									const isGrandTotal = row.distribName === 'Grand Total';
+              </thead> 
+              <tbody className="text-[11px] divide-y divide-slate-200 text-left">
+                {reportData.map((row: IDistribWisePendingRptRow, index: number) => {
+                  const isGrandTotal = row.channelName === 'Grand Total';
+                  // const isSubTotal = row.prodCode.includes('Total');
 
                   let rowTotalClass = "table-data";
 
                   if (isGrandTotal) {
-                    rowTotalClass = "bg-orange-200 text-rose-700";
+                    rowTotalClass = "bg-grand-total";
                   } 
+                  // else if (isSubTotal) {
+                  //   rowTotalClass = "bg-sub-total";
+                  // }
                   return (
                     <tr key={index} className={rowTotalClass}>
-                      <td className="py-0 px-2 border border-slate-200 font-bold">
-												<button
-													type="button"
-													onClick={() => handleDcClick(row.dcId, row.dcNo)}
-													className="text-pink-600 text-left focus:outline-none"
-												>
-													{row.dcNo}
-												</button>
-                        
-                      </td>
-                      <td className="py-0 px-2 border border-slate-200">{row.dcDate}</td>
-                      <td className="py-0 px-2 border border-slate-200">{row.confirmDate}</td>
-                      <td className="py-0 px-2 border border-slate-200">{row.doNo}</td>
-                      <td className="py-0 px-2 border border-slate-200">{row.channelName}</td>
-                      <td className="py-0 px-2 border border-slate-200">{row.zoneName}</td>
-                      <td className="py-0 px-2 border border-slate-200">{row.distribCode}</td>
-                      <td className="py-0 px-2 border border-slate-200 font-semibold
-											min-w-[250px] max-w-[500px] whitespace-normal text-[13px]
-											">{row.distribName}</td>
-                      <td className={`py-0 px-2 border border-slate-200 text-end text-[13px]
-                      ${isGrandTotal ? 'bg-orange-200 text-rose-700 font-bold' 
-												: 
-											'bg-green-100 text-rose-900 font-semibold'}`}
-                      >
-                        {formatDecimal(row.challanQty)}
-                      </td>
+                      <td className={`py-0 px-2 border border-slate-200 text-left min-w-[140px]
+                        ${isGrandTotal ? 'bg-transparent text-white' : 'bg-[#ffd6ba] text-slate-600'}
+                        `}>{row.channelName}</td>
+                      <td className="py-0 px-2 border border-slate-200 min-w-[150px]">{row.divisionName}</td>
+                      <td className="py-0 px-2 border border-slate-200 min-w-[150px]">{row.territoryName}</td>
+                      <td className="py-0 px-2 border border-slate-200
+                      text-left min-w-[350px] max-w-[500px] whitespace-normal
+                      ">{row.distribName}</td>
+                      <td className="py-0 px-2 border border-slate-200 min-w-[150px]">{row.doNo}</td>
+                      <td className="py-0 px-2 border border-slate-200">{row.poNo}</td>
+                      <td className="py-0 px-2 border border-slate-200
+                      text-left min-w-[350px] max-w-[500px] whitespace-normal
+                      ">{row.deliveryPoint}</td>
+                      <td className="py-0 px-2 border border-slate-200 min-w-[100px]">{row.doDate}</td>
+                      <td className="py-0 px-2 border border-slate-200
+                      text-left min-w-[350px] max-w-[500px] whitespace-normal
+                      ">{row.prodName}</td>
+                      <td className="py-0 px-2 border border-slate-200 text-end">{formatDecimal(row.doQtyBag)}</td>
+                      <td className="py-0 px-2 border border-slate-200 text-end">{formatDecimal(row.doQtyTon)}</td>
+                      <td className="py-0 px-2 border border-slate-200 text-end">{formatDecimal(row.pendingQtyBag)}</td>
+                      <td className="py-0 px-2 border border-slate-200 text-end">{formatDecimal(row.pendingQtyTon)}</td>
+                      <td className="py-0 px-2 border border-slate-200 text-end">{formatDecimal(row.productPrice)}</td>
                     </tr>
                   );
                 })}
