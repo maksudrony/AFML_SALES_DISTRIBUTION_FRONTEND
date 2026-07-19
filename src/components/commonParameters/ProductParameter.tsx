@@ -67,6 +67,7 @@ export const ProductParameterSelect = ({ value, onChange, onError }: ProductPara
             zIndex: 35,
           }),
         }}
+        // menuPortalTarget={document.body}
       />
     </div>
   );
