@@ -28,6 +28,4 @@ export const channelDistributorApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useLazyGetChannelDistributorQuery,
-} = channelDistributorApi;
+export const { useLazyGetChannelDistributorQuery } = channelDistributorApi;

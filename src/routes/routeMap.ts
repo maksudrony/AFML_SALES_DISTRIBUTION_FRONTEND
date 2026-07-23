@@ -6,6 +6,7 @@ import { DayWiseDelRpt } from '../pages/doAndLiftingReport/DayWiseDelRpt';
 import { LiftingAndDoReport } from '../pages/doAndLiftingReport/LiftingAndDoReport';
 import { AverageRateRpt } from '../pages/doAndLiftingReport/AverageRateRpt';
 import { DistribWisePendingRpt } from '../pages/doAndLiftingReport/DistribWisePendingRpt';
+import { SalesDashboard } from '../pages/salesDashboard/SalesDashboard';
 
 export const routeMap: Record<string, () => React.JSX.Element> = {
   //IMS REPORT MENU
@@ -17,4 +18,7 @@ export const routeMap: Record<string, () => React.JSX.Element> = {
   '/doandliftingreport/avgrateonlifting&do&pending': AverageRateRpt,
   '/doandliftingreport/distributorwisependingreport': DistribWisePendingRpt,
   '/doandliftingreport/productwisedeliveryreport': ProductWiseDeliveryReport,
+
+  //Dashboard Menu
+  '/dashboard/maindashboard': SalesDashboard,
 };

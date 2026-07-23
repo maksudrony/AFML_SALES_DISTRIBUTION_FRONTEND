@@ -11,6 +11,8 @@ export const ReportKeys = {
   ProductWiseDeliveryRpt: 'ProductWiseDeliveryRpt',
   //IMS REPORT MENU
   SummaryImsRpt: 'SummaryImsRpt',
+  //SALES DASHBOARD
+  SalesDashboard: 'SalesDashboard'
 } as const;
 
 // Valid Keys for Report Names--> ReportKeys objects er value gula niye UNION TYPE create kora

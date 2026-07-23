@@ -159,7 +159,7 @@ export const ChannelDistributorSelect = ({ channelId, userId, value, onChange, o
             fontSize: '11px',
             whiteSpace: 'normal',
             wordBreak: 'break-word',
-            padding: '4px',
+            padding: '4px 10px',
           }),
           menu: (base) => ({
             ...base,

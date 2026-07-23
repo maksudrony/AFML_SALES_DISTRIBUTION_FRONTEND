@@ -6,13 +6,22 @@ export interface IChallanDistributorParams {
   toDate: string;
   channelId: number | null;
   userId: string;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface IChallanDistributorResponse {
+  items: ICommonParameterDto[];
+  totalCount: number;
+  hasMore: boolean;
 }
 
 export const challanDistributorApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getChallanDistributor: builder.query<ICommonParameterDto[], IChallanDistributorParams>({
+    getChallanDistributor: builder.query<IChallanDistributorResponse, IChallanDistributorParams>({
       query: (params) => ({
-        url: '/CommonParameters/challan-distributor',
+        url: '/ChallanWiseDistrib',
         method: 'GET',
         params,
       }),
@@ -21,4 +30,4 @@ export const challanDistributorApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetChallanDistributorQuery } = challanDistributorApi;
+export const { useLazyGetChallanDistributorQuery } = challanDistributorApi;
