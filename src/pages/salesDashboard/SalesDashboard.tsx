@@ -8,7 +8,10 @@ import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateReportFilters, ReportKeys } from '../../features/reportCache/reportFiltersCacheSlice';
 import { useGetSalesDashboardSummaryQuery } from '../../services/salesDashboard/salesDashboardApi';
-import ReactECharts from 'echarts-for-react';
+import { ChannelWiseLiftingChart } from './components/ChannelWiseLiftingChart';
+import { ChannelWiseLiftingPieChart } from './components/ChannelWiseLiftingPieChart';
+import { ChannelWiseSalesChart } from './components/ChannelWiseSalesChart';
+import { ChannelWiseSalesPieChart } from './components/ChannelWiseSalesPieChart';
 
 export const SalesDashboard = () => {
   const dispatch = useAppDispatch();
@@ -35,10 +38,12 @@ export const SalesDashboard = () => {
   };
 
   const today = new Date();
+	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
   const tomorrow = new Date ();
   tomorrow.setDate (today.getDate() + 1);
 
-  const defaultFromDate = formatDate(today);
+  const defaultFromDate = formatDate(firstDayOfMonth);
   const defaultToDate = formatDate(today);
 
   // States with Cache Fallbacks
@@ -51,6 +56,7 @@ export const SalesDashboard = () => {
 const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
     (cachedFilters?.selectedQuantityType as number) ?? 4
 );
+
 
   // Automatic Redux Cache Sync
   useEffect(() => {
@@ -71,13 +77,13 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
     selectedQuantityType,
   ]);
 
-    const { data : dashboardData, isLoading, isFetching, isError, } = 
-    useGetSalesDashboardSummaryQuery({
-        fromDate,
-        toDate,
-        typeId: selectedQuantityType === 0 ? null : selectedQuantityType,
-        entryBy: userId,
-    });
+	const { data : dashboardData, isLoading, isFetching, } = 
+	useGetSalesDashboardSummaryQuery({
+			fromDate,
+			toDate,
+			typeId: selectedQuantityType === 0 ? null : selectedQuantityType,
+			entryBy: userId,
+	});
 
 	const summary = dashboardData?.summary;
 
@@ -85,155 +91,13 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
   const channelWiseSales = dashboardData?.channelWiseSales ?? [];
 
-	const channelWiseLiftingOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-      },
-    },
-
-    legend: {
-      top: 0,
-      data: ['Lifting Qty', 'Trend'],
-    },
-
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '8%',
-      top: '15%',
-      containLabel: true,
-    },
-
-    xAxis: {
-      type: 'category',
-      data: channelWiseLifting.map(
-        (item) => item.channelName
-      ),
-
-      axisLabel: {
-        interval: 0,
-        rotate: channelWiseLifting.length > 5 ? 25 : 0,
-        fontSize: 10,
-      },
-    },
-
-    yAxis: {
-      type: 'value',
-      name: 'Quantity',
-    },
-
-    series: [
-      {
-        name: 'Lifting Qty',
-        type: 'bar',
-
-        data: channelWiseLifting.map(
-          (item) => item.liftingQty
-        ),
-
-        barMaxWidth: 45,
-
-        label: {
-          show: true,
-          position: 'top',
-          fontSize: 10,
-          formatter: (params: any) =>
-            formatDecimal(params.value),
-        },
-      },
-
-      {
-        name: 'Trend',
-        type: 'line',
-
-        smooth: true,
-
-        data: channelWiseLifting.map(
-          (item) => item.liftingQty
-        ),
-
-        symbol: 'circle',
-        symbolSize: 7,
-
-        lineStyle: {
-          width: 3,
-        },
-      },
-    ],
-  };
-
-
-
-	const channelWiseSalesPieOption = {
-    tooltip: {
-      trigger: 'item',
-
-      formatter: (params: any) => {
-        return `
-          ${params.name}<br/>
-          Quantity: ${formatDecimal(params.value)}<br/>
-          Percentage: ${params.percent}%
-        `;
-      },
-    },
-
-    legend: {
-      type: 'scroll',
-      bottom: 0,
-      left: 'center',
-      textStyle: {
-        fontSize: 10,
-      },
-    },
-
-    series: [
-      {
-        name: 'Sales Qty',
-        type: 'pie',
-
-        radius: ['35%', '70%'],
-
-        center: ['50%', '45%'],
-
-        avoidLabelOverlap: true,
-
-        itemStyle: {
-          borderRadius: 5,
-          borderColor: '#fff',
-          borderWidth: 2,
-        },
-
-        label: {
-          show: true,
-          formatter: '{b}\n{d}%',
-          fontSize: 10,
-        },
-
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 13,
-            fontWeight: 'bold',
-          },
-        },
-
-        data: channelWiseSales.map((item) => ({
-          name: item.channelName,
-          value: item.salesQty,
-        })),
-      },
-    ],
-  };
-
 
   const formatDecimal = (num: number | undefined | null): string => {
     if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(num));
   };
 
-  const showSpinner = !dashboardData && (isFetching || isLoading);
+  const showSpinner = isFetching || isLoading;
 
   return (
     <div className="w-full flex flex-col gap-2 font-sans text-slate-800 p-1 bg-white 
@@ -291,64 +155,90 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
         
         <div className="print-only-preview-header text-center mb-4 hidden print:block">
           <h2 className="page-main-header">AKIJ FLOUR MILLS LTD.</h2>
-          <h3 className="page-sub-header">DAY WISE DELIVERY REPORT</h3>
+          <h3 className="page-sub-header">MAIN SALES DASHBOARD</h3>
         </div>
 
         {showSpinner && <RGBSpinner />} 
 				
+				{!showSpinner && channelWiseLifting.length > 0 && (
+				<>
 				<div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
 
-          <div className="bg-blue-100 rounded-xl p-4 border border-blue-200 shadow-sm
-					min-h-[110px] flex flex-col justify-center">
-            <span className="text-xs font-semibold text-blue-700 uppercase">
-              Lifting
-            </span>
-            <span className="text-2xl font-bold text-slate-800 mt-1">
-              {formatDecimal(summary?.liftingQty)}
-            </span>
-            <span className="text-[10px] text-slate-500">
-              Total Lifting
-            </span>
-          </div>
+					<div
+						className="rounded-xl p-4 min-h-[110px] flex flex-col justify-center
+						bg-gradient-to-br from-cyan-100 via-blue-200 to-violet-300
+						border border-cyan-200/60 shadow-md
+						transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+					>
+						<span className="text-xs font-bold text-blue-900 uppercase">
+							Lifting
+						</span>
 
-					<div className="bg-cyan-100 rounded-xl p-4 border border-cyan-200 shadow-sm
-					min-h-[110px] flex flex-col justify-center">
-            <span className="text-xs font-semibold text-cyan-700 uppercase">
-              Sales
-            </span>
-            <span className="text-2xl font-bold text-slate-800 mt-1">
-              {formatDecimal(summary?.salesQty)}
-            </span>
-            <span className="text-[10px] text-slate-500">
-              Total Sales
-            </span>
-          </div>
+						<span className="text-2xl font-bold text-slate-900 mt-1">
+							{formatDecimal(summary?.liftingQty)}
+						</span>
 
-					<div className="bg-amber-100 rounded-xl p-4 border border-amber-200 shadow-sm
-					min-h-[110px] flex flex-col justify-center">
-            <span className="text-xs font-semibold text-amber-700 uppercase">
-              IMS
-            </span>
-            <span className="text-2xl font-bold text-slate-800 mt-1">
-              {formatDecimal(summary?.imsQty)}
-            </span>
-            <span className="text-[10px] text-slate-500">
-              Total IMS
-            </span>
-          </div>
+						<span className="text-[10px] font-medium text-slate-700">
+							Total Lifting
+						</span>
+					</div>
 
-					<div className="bg-rose-100 rounded-xl p-4 border border-rose-200 shadow-sm
-					min-h-[110px] flex flex-col justify-center">
-            <span className="text-xs font-semibold text-rose-700 uppercase">
-              PENDING
-            </span>
-            <span className="text-2xl font-bold text-slate-800 mt-1">
-              {formatDecimal(summary?.pendingQty)}
-            </span>
-            <span className="text-[10px] text-slate-500">
-              Total Pending
-            </span>
-          </div>
+					<div
+						className="rounded-xl p-4 min-h-[110px] flex flex-col justify-center
+						bg-gradient-to-br from-emerald-100 via-cyan-200 to-blue-300
+						border border-emerald-200/60 shadow-md
+						transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+					>
+						<span className="text-xs font-bold text-emerald-900 uppercase">
+							Sales
+						</span>
+
+						<span className="text-2xl font-bold text-slate-900 mt-1">
+							{formatDecimal(summary?.salesQty)}
+						</span>
+
+						<span className="text-[10px] font-medium text-slate-700">
+							Total Sales
+						</span>
+					</div>
+
+					<div
+						className="rounded-xl p-4 min-h-[110px] flex flex-col justify-center
+						bg-gradient-to-br from-yellow-100 via-orange-200 to-pink-200
+						border border-yellow-200/60 shadow-md
+						transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+					>
+						<span className="text-xs font-bold text-orange-900 uppercase">
+							IMS
+						</span>
+
+						<span className="text-2xl font-bold text-slate-900 mt-1">
+							{formatDecimal(summary?.imsQty)}
+						</span>
+
+						<span className="text-[10px] font-medium text-slate-700">
+							Total IMS
+						</span>
+					</div>
+
+					<div
+						className="rounded-xl p-4 min-h-[110px] flex flex-col justify-center
+						bg-gradient-to-br from-pink-200 via-rose-200 to-purple-300
+						border border-pink-200/60 shadow-md
+						transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+					>
+						<span className="text-xs font-bold text-rose-900 uppercase">
+							PENDING
+						</span>
+
+						<span className="text-2xl font-bold text-slate-900 mt-1">
+							{formatDecimal(summary?.pendingQty)}
+						</span>
+
+						<span className="text-[10px] font-medium text-slate-700">
+							Total Pending
+						</span>
+					</div>
 				
 				</div>
 
@@ -367,22 +257,44 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 							</p>
 						</div>
 
-						{channelWiseLifting.length > 0 ? (
-							<ReactECharts
-								option={channelWiseLiftingOption}
-								style={{
-									height: '320px',
-									width: '100%',
-								}}
-								notMerge={true}
-								lazyUpdate={true}
-							/>
-						) : (
-							<div className="h-[320px] flex items-center justify-center text-slate-400 text-sm">
-								No Channel Wise Lifting Data Found
-							</div>
-						)}
+						<ChannelWiseLiftingChart
+							data={channelWiseLifting}
+						/>
+
 					</div>
+
+					<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Channel Wise Lifting
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Channel wise Lifting quantity distribution
+              </p>
+            </div>
+
+						<ChannelWiseLiftingPieChart
+							data={channelWiseLifting}
+						/>
+
+          </div>
+
+					<div className="lg:col-span-2 bg-white rounded-xl border border-slate-200
+					shadow-sm p-3">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Channel Wise Sales
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Channel wise Sales quantity distribution
+              </p>
+            </div>
+
+						<ChannelWiseSalesChart
+							data={channelWiseSales}
+						/>
+
+          </div>
 
 					<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
             <div className="mb-2">
@@ -390,30 +302,21 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
                 Channel Wise Sales
               </h3>
               <p className="text-[10px] text-slate-500">
-                Channel wise sales quantity distribution
+                Channel wise Sales quantity distribution
               </p>
             </div>
 
-            {channelWiseSales.length > 0 ? (
-              <ReactECharts
-                option={channelWiseSalesPieOption}
-                style={{
-                  height: '320px',
-                  width: '100%',
-                }}
-                notMerge={true}
-                lazyUpdate={true}
-              />
-            ) : (
-              <div className="h-[320px] flex items-center justify-center text-slate-400 text-sm">
-                No Channel Wise Sales Data Found
-              </div>
-            )}
+						<ChannelWiseSalesPieChart
+							data={channelWiseSales}
+						/>
 
           </div>
 
-				</div>
+					
 
+				</div>
+				</>
+				)}
       </div>
     </div>
   );
