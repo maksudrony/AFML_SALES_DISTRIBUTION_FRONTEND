@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { FromDateSelect } from '../../components/commonParameters/FromDateParameter';
 import { ToDateSelect } from '../../components/commonParameters/ToDateParameter';
 import { QuantityTypeSelect } from '../../components/commonParameters/QuantityTypeParameter';
-import { PdfPrintButton } from '../../components/commonParameters/PdfPrintButton';
+import { DashboardPdfButton } from '../../components/commonParameters/DashboardPdfButton';
 import { RGBSpinner } from '../../components/RGBSpinner';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
@@ -12,6 +12,8 @@ import { ChannelWiseLiftingChart } from './components/ChannelWiseLiftingChart';
 import { ChannelWiseLiftingPieChart } from './components/ChannelWiseLiftingPieChart';
 import { ChannelWiseSalesChart } from './components/ChannelWiseSalesChart';
 import { ChannelWiseSalesPieChart } from './components/ChannelWiseSalesPieChart';
+import { MonthlyChannelWiseLiftingChart } from './components/MonthlyChannelWiseLiftingChart';
+import { MonthlyChannelWiseLiftingLine } from './components/MonthlyChannelWiseLiftingLine';
 
 export const SalesDashboard = () => {
   const dispatch = useAppDispatch();
@@ -91,6 +93,8 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
   const channelWiseSales = dashboardData?.channelWiseSales ?? [];
 
+	const monthlyChannelWiseLifting = dashboardData?.monthlyChannelWiseLifting ?? [];
+
 
   const formatDecimal = (num: number | undefined | null): string => {
     if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
@@ -140,12 +144,11 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 						onError={setErrorBanner} 
 						includeValues={[]}
 					/>
-					<PdfPrintButton 
-						contentRef={reportPrintRef} 
-						hasData={Boolean(dashboardData)} 
-						documentTitle="Day Wise Delivery Report"
-						orientation="portrait"
-						onError={setErrorBanner} 
+					<DashboardPdfButton 
+							contentRef={reportPrintRef} 
+							hasData={Boolean(dashboardData)} 
+							documentTitle="Main Sales Dashboard"
+							onError={setErrorBanner} 
 					/>
         </div>
       </div>
@@ -308,6 +311,40 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
 						<ChannelWiseSalesPieChart
 							data={channelWiseSales}
+						/>
+
+          </div>
+
+					<div className="lg:col-span-3 bg-white rounded-xl border border-slate-200
+					shadow-sm p-3">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Monthly Channel Wise Lifting
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Channel wise Lifting quantity distribution
+              </p>
+            </div>
+
+						<MonthlyChannelWiseLiftingChart
+							monthlyData={monthlyChannelWiseLifting}
+						/>
+
+          </div>
+
+					<div className="lg:col-span-3 bg-white rounded-xl border border-slate-200
+					shadow-sm p-3">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Monthly Channel Wise Lifting
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Channel wise Lifting quantity distribution
+              </p>
+            </div>
+
+						<MonthlyChannelWiseLiftingLine
+							monthlyData={monthlyChannelWiseLifting}
 						/>
 
           </div>

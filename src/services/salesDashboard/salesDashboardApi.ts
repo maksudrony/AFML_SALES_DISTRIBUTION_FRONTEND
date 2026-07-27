@@ -26,10 +26,18 @@ export interface IChannelWiseSales {
   salesQty: number;
 }
 
+export interface IMonthlyChannelWiseLifting  {
+  dcMonName: string;
+  channelId: number;
+  channelName: string;
+  liftingQty: number;
+}
+
 export interface ISalesDashboardResponse {
   summary: ISalesDashboardSummary;
   channelWiseLifting: IChannelWiseLifting[];
   channelWiseSales: IChannelWiseSales[];
+  monthlyChannelWiseLifting: IMonthlyChannelWiseLifting[];
 }
 
 export const salesDashboardApi = baseApi.injectEndpoints({

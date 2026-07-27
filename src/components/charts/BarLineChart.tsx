@@ -64,7 +64,7 @@ export const BarLineChart = ({
     },
 
     grid: {
-      left: '3%',
+      left: '5%',
       right: '4%',
       bottom: '8%',
       top: '15%',
@@ -101,6 +101,17 @@ export const BarLineChart = ({
       // nameGap: 50,
       axisLabel: {
       rotate: 15,
+      fontSize: 10,
+      },
+
+      nameLocation: 'middle',
+      nameGap: 75,           
+      nameRotate: 90,        
+      nameTextStyle: {
+        fontStyle: 'italic', 
+        fontSize: 15,
+        fontWeight: 'bold',  
+        color: '#64748b',    
       },
     },
 
