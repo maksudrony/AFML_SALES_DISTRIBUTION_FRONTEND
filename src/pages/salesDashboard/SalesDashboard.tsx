@@ -14,6 +14,7 @@ import { ChannelWiseSalesChart } from './components/ChannelWiseSalesChart';
 import { ChannelWiseSalesPieChart } from './components/ChannelWiseSalesPieChart';
 import { MonthlyChannelWiseLiftingChart } from './components/MonthlyChannelWiseLiftingChart';
 import { MonthlyChannelWiseLiftingLine } from './components/MonthlyChannelWiseLiftingLine';
+import { MonthlySalesVsLiftingLine } from './components/MonthlySalesVsLiftingLine'
 
 export const SalesDashboard = () => {
   const dispatch = useAppDispatch();
@@ -95,6 +96,8 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
 	const monthlyChannelWiseLifting = dashboardData?.monthlyChannelWiseLifting ?? [];
 
+	const monthlySalesVsLifting = dashboardData?.monthlySalesVsLifting ?? [];
+
 
   const formatDecimal = (num: number | undefined | null): string => {
     if (num === undefined || num === null || isNaN(Number(num))) return '0.00';
@@ -144,12 +147,12 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 						onError={setErrorBanner} 
 						includeValues={[]}
 					/>
-					<DashboardPdfButton 
-							contentRef={reportPrintRef} 
-							hasData={Boolean(dashboardData)} 
-							documentTitle="Main Sales Dashboard"
-							onError={setErrorBanner} 
-					/>
+				<DashboardPdfButton
+					contentRef={reportPrintRef}
+					hasData={Boolean(dashboardData)}
+					documentTitle="Main Sales Dashboard"
+					onError={setErrorBanner}
+				/>
         </div>
       </div>
 
@@ -246,9 +249,9 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 				</div>
 
 
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+				<div className="dashboard-chart-grid grid grid-cols-1 lg:grid-cols-3 gap-3">
 
-					<div className="lg:col-span-2 bg-white rounded-xl border border-slate-200
+					<div className="dashboard-chart-card lg:col-span-2 bg-white rounded-xl border border-slate-200
 					shadow-sm p-3">
 						<div className="mb-2">
 							<h3 className="text-sm font-bold text-slate-800">
@@ -266,7 +269,7 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
 					</div>
 
-					<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+					<div className="dashboard-chart-card bg-white rounded-xl border border-slate-200 shadow-sm p-3">
             <div className="mb-2">
               <h3 className="text-sm font-bold text-slate-800">
                 Channel Wise Lifting
@@ -282,7 +285,7 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
           </div>
 
-					<div className="lg:col-span-2 bg-white rounded-xl border border-slate-200
+					<div className="dashboard-chart-card lg:col-span-2 bg-white rounded-xl border border-slate-200
 					shadow-sm p-3">
             <div className="mb-2">
               <h3 className="text-sm font-bold text-slate-800">
@@ -299,7 +302,7 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
           </div>
 
-					<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+					<div className="dashboard-chart-card bg-white rounded-xl border border-slate-200 shadow-sm p-3">
             <div className="mb-2">
               <h3 className="text-sm font-bold text-slate-800">
                 Channel Wise Sales
@@ -315,7 +318,7 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
           </div>
 
-					<div className="lg:col-span-3 bg-white rounded-xl border border-slate-200
+					<div className="dashboard-chart-card lg:col-span-3 bg-white rounded-xl border border-slate-200
 					shadow-sm p-3">
             <div className="mb-2">
               <h3 className="text-sm font-bold text-slate-800">
@@ -332,7 +335,7 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
           </div>
 
-					<div className="lg:col-span-3 bg-white rounded-xl border border-slate-200
+					<div className="dashboard-chart-card lg:col-span-3 bg-white rounded-xl border border-slate-200
 					shadow-sm p-3">
             <div className="mb-2">
               <h3 className="text-sm font-bold text-slate-800">
@@ -345,6 +348,23 @@ const [selectedQuantityType, setSelectedQuantityType] = useState<number>(
 
 						<MonthlyChannelWiseLiftingLine
 							monthlyData={monthlyChannelWiseLifting}
+						/>
+
+          </div>
+
+					<div className="dashboard-chart-card lg:col-span-3 bg-white rounded-xl border border-slate-200
+					shadow-sm p-3">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Monthly Sales Vs Lifting
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                Monthly Sales Vs Lifting quantity distribution
+              </p>
+            </div>
+
+						<MonthlySalesVsLiftingLine
+							data={monthlySalesVsLifting}
 						/>
 
           </div>

@@ -64,9 +64,13 @@ export const DashboardPdfButton = ({
           bg-gradient-to-r from-sky-600 via-purple-500 to-pink-400
           hover:from-sky-700 hover:via-purple-600 hover:to-pink-500
           hover:shadow-xl
-          text-white font-bold text-[10px]
-          tracking-wider rounded-md
-          cursor-pointer transition-colors
+          text-white
+          font-bold
+          text-[10px]
+          tracking-wider
+          rounded-md
+          cursor-pointer
+          transition-colors
           whitespace-nowrap
         "
       >

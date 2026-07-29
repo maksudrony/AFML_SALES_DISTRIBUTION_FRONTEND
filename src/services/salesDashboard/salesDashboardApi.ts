@@ -33,11 +33,18 @@ export interface IMonthlyChannelWiseLifting  {
   liftingQty: number;
 }
 
+export interface IMonthlySalesVsLifting  {
+  doMonName: string;
+  salesQty: number;
+  liftingQty: number;
+}
+
 export interface ISalesDashboardResponse {
   summary: ISalesDashboardSummary;
   channelWiseLifting: IChannelWiseLifting[];
   channelWiseSales: IChannelWiseSales[];
   monthlyChannelWiseLifting: IMonthlyChannelWiseLifting[];
+  monthlySalesVsLifting: IMonthlySalesVsLifting [];
 }
 
 export const salesDashboardApi = baseApi.injectEndpoints({
